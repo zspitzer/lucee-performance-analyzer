@@ -1,0 +1,61 @@
+{
+    "name":"Lucee Performance Analyzer",
+    "author":"Zac Spitzer",
+    "version":"1.0.0.1",
+    "bugs":"https://github.com/zspitzer/lucee-performance-analyzer/issues",
+    "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-logviewer/refactoring/build/images/logo.png",
+    "changelog":"",
+    "contributors":[],
+    "dependencies":{},
+    "description":"",
+    "devDependencies":{},
+    "documentation":"",
+    "homepage":"https://github.com/zspitzer/lucee-performance-analyzer",
+    "ignore":[],
+    "installPaths":{},
+    "instructions":"",
+    "keywords":"logs lucee admin plugin performance",
+    "license":[
+        {
+            "type":"",
+            "URL":""
+        }
+    ],
+    "location":"ForgeboxStorage",    
+    "private":false,
+    "projectURL":"",
+    "repository":{
+        "type":"git",
+        "URL":"https://github.com/zspitzer/lucee-performance-analyzer"
+    },    
+    "scripts":{},
+    "shortDescription":"A Lucee Admin plugin to analyze debug logs for performance problems",
+    "slug":"A345C8CB-04CC-4D2B-93D50471D5105D83",
+    "testbox":{
+        "bundles":"",
+        "directory":"tests.specs",
+        "labels":"",
+        "options":{},
+        "recurse":true,
+        "reporter":"",
+        "runner":[
+            {
+                "default":""
+            }
+        ],
+        "testBundles":"",
+        "testSpecs":"",
+        "testSuites":"",
+        "verbose":true,
+        "watchDelay":500,
+        "watchPaths":"**.cfc"
+    },
+    "type":"lucee-extensions",
+    "lucee-extension-releasetype": "all",
+    "lucee-extension-mincoreversion": "5.2.8.50",
+    "lucee-extension-category": "logs",
+    
+    "engines" : [
+        { "type" : "lucee", "version" : ">=5.2.8" }
+    ]
+}

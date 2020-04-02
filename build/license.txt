@@ -1,0 +1,12 @@
+Hi fellow Lucee user!
+ 
+You are hereby licensed to use this extension on your Lucee installation.
+I hope it helps you out, and don't forget to spread the word about Lucee!
+
+More info can be found at 
+http://www.lucee.nl/post.cfm/railo-admin-log-analyzer
+
+Many thanks go to Gert Franz, who developed the original code.
+
+Paul Klinkenberg
+www.lucee.nl

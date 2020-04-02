@@ -1,0 +1,8 @@
+{
+    "editor.renderWhitespace": "boundary",
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"eslint.enable": true
+}

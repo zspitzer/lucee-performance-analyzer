@@ -1,0 +1,1 @@
+<cflocation url="?action=#req.action#&plugin=#req.plugin#&pluginAction=scopes" addToken="false">

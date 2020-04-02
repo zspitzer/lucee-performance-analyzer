@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="clean" basedir="." name="formtag-extension">
+  <description>
+        Build modern Extension
+    </description>
+   
+
+  <import file="build-compile.xml"/>
+
+
+  <scriptdef name="replace" language="javascript">
+     <attribute name="haystack" />
+     <attribute name="needle" />
+     <attribute name="repl" />
+     <attribute name="property" />
+     <![CDATA[
+      var text = attributes.get("haystack");
+      var needle = attributes.get("needle");
+      var repl = attributes.get("repl");
+      text=text.trim();
+      text=text.replace(needle,repl);
+      project.setProperty(attributes.get("property"), text);
+     ]]>
+  </scriptdef>
+
+
+
+
+  <target name="distModern" depends="compile" description="copy source file to temp" >
+   
+    <!-- Manifest of the extension -->
+    <echo file="${dist}/extension2/META-INF/MANIFEST.MF">Manifest-Version: 1.0
+Built-Date: ${NOW}
+version: "${bundleversion}${build.number}"
+id: "${id}"
+name: "${label}"
+description: "${description}"
+release-type: "${release-type}"
+lucee-core-version: "${lucee-core-version}"
+projectUrl: ${url}
+sourceUrl: ${url}
+documentionUrl: ${url}
+</echo>
+<!-- for java extensions only
+start-bundles: false
+cache: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${bundleversion}${build.number}'}]"
+-->
+
+    <!-- copy plugin -->
+    <copy todir="${dist}/extension2/plugins/${codename}" failonerror="false">
+      <fileset dir="${plugins}"/>
+    </copy>
+
+    <!-- copy custom tags -->
+    <copy todir="${dist}/extension2/tags" failonerror="false">
+      <fileset dir="${tags}">
+        <include name="**/*"/>
+        <exclude name="**/.*"/>
+      </fileset>
+    </copy>
+
+    <!-- copy custom functions -->
+    <copy todir="${dist}/extension2/functions" failonerror="false">
+      <fileset dir="${functions}">
+        <include name="**/*"/>
+        <exclude name="**/.*"/>
+      </fileset>
+    </copy>
+
+    <!-- copy the jars necessary -->
+    <copy todir="${dist}/extension2/jars" failonerror="false">
+      <fileset dir="${lib}">
+        <include name="**/*.jar"/>
+        <exclude name="**/javax.servlet.jar"/>
+        <exclude name="**/lucee*.jar"/>
+      </fileset>
+    </copy>
+
+    <!-- copy the jar just build -->
+    <copy todir="${dist}/extension2/jars">
+      <fileset dir="${temp}/jars/">
+        <include name="**/*.jar"/>
+      </fileset>
+    </copy>
+    <move failonerror="false" quiet="true"
+      file="${dist}/extension2/jars/lucee-extension-${codename}.jar" 
+      tofile="${dist}/extension2/jars/lucee-extension-${codename}-${bundleversion}${build.number}.jar"/>
+    <!-- -->
+
+    <!-- copy the logo -->
+    <copy todir="${dist}/extension2/META-INF">
+      <fileset dir="${build}/images">
+        <include name="logo.png"/>
+      </fileset>
+    </copy>
+
+    <!-- Zip everything  -->
+     <zip destfile="${dist}/modern/extension-${codename}-${bundleversion}${build.number}.lex">
+        <zipfileset dir="${dist}/extension2"/>
+    </zip>
+    
+  </target>
+
+
+  <target name="buildModern"  depends="distModern" description="clean up" >
+    <!-- <delete dir="${dist}/extension2"/> -->
+  </target>
+
+</project>

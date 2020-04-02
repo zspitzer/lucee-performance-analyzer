@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="addLicenseToAll" basedir="." name="AddLicense">
+	<description>Add license header</description>
+	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
+	<property name="src" location="."/>
+
+	<property file="build.properties"/>
+
+
+	<scriptdef name="addLicenseIfNecessary" language="javascript">
+		<attribute name="property" />
+		<attribute name="text" />
+		<attribute name="license" />
+		<attribute name="file" />
+		<![CDATA[
+			var text = attributes.get("text");
+			var license = attributes.get("license");
+			var file = attributes.get("file");
+			var cs,ce;
+			var ignore=false;
+
+			if(text=='${content}') {
+				text="";
+				ignore=true;
+			}
+			var ttext=text.trim();
+			if(ttext.length==0) {
+				ignore=true;
+			}
+
+			// Java
+			if(file.endsWith(".java") || file.endsWith(".cfs")) {
+				cs="/**";
+				ce="**/\n";
+			}
+			// CFML
+			else if(file.endsWith(".cfm") || file.endsWith(".cfml")) {
+				cs="<!--- ";
+				ce="--->";
+			}
+			// CFC (can be script or tag)
+			else if(file.endsWith(".cfc")) {
+				// script version
+				if(text.indexOf("<cfcomponent")==-1 && text.indexOf("<cfscript")==-1) {
+					cs="/**";
+					ce="**/\n";
+				}
+				else {
+					cs="<!--- ";
+					ce="--->";
+				}
+			}
+
+			var lockFor="GNU Lesser General Public";
+
+			if(!ignore) {
+				// already a license in the file? Strip it
+				if(text.indexOf(lockFor) > -1) {
+					text = text.substring(text.indexOf(ce) + ce.length);
+				}
+				text = cs + license + ce + text;
+			}
+
+			project.setProperty(attributes.get("property"), text);
+		]]>
+	</scriptdef>
+
+	<!-- Create the time stamp -->
+	<tstamp>
+		<format property="yearnow" pattern="yyyy" />
+		<format property="now" pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+
+  <property name="license">
+ *
+ * Copyright (c) ${yearnow}, Paul Klinkenberg, Utrecht, The Netherlands.
+ * Originally written by Gert Franz, Switzerland.
+ * All rights reserved.
+ *
+ * Date: ${now}
+ * Revision: ${bundleversion}
+ * Project info: http://www.lucee.nl/post.cfm/railo-admin-log-analyzer
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.  If not, see &lt;http://www.gnu.org/licenses/>.
+ *
+ </property>
+
+
+  <target name="init" description="">
+  </target>
+
+  <target name="addLicense" description="generate the distribution">
+    <loadfile property="content" srcFile="${file}"/>
+    <echo message="----- ${file} -----"/>
+
+    <addLicenseIfNecessary file="${file}" property="content" text="${content}" license="${license}"/>
+    <echo message="${content}" file="${file}"/>
+  </target>
+
+  
+  <target name="addLicenseToAll" description="generate the distribution"  depends="init">
+    <foreach target="addLicense" param="file">
+      <path>
+        <fileset dir="${src}" casesensitive="yes">
+          <include name="**/*.java"/>
+          <include name="**/*.cfs"/>
+          <include name="**/*.cfm"/>
+          <include name="**/*.cfml"/>
+          <include name="**/*.cfc"/>
+        </fileset>
+      </path>
+    </foreach>
+  </target>
+
+</project>

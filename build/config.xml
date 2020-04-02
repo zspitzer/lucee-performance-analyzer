@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<config>
+	<info>
+		<type>{installtype}</type>
+		<id>{id}</id>
+		<name>{codename}</name>
+		<label>{label}</label>
+		<description>{desc}</description>
+		<version>{version}</version>
+		<category>{category}</category>
+		<image>logo.png</image>
+		<paypal></paypal>
+		<author>{author}</author>
+		<codename>{codename}</codename>
+		<video></video>
+		<support>{support}</support>
+		<created>{date}</created>
+		<provider>http://www.getrailo.org/ExtensionProvider.cfc</provider>
+	</info>
+</config>
