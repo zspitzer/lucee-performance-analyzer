@@ -3,7 +3,7 @@
     "author":"Zac Spitzer",
     "version":"1.0.0.1",
     "bugs":"https://github.com/zspitzer/lucee-performance-analyzer/issues",
-    "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-logviewer/refactoring/build/images/logo.png",
+    "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-performance-analyzer/master/build/images/logo.png",
     "changelog":"",
     "contributors":[],
     "dependencies":{},
