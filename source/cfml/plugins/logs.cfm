@@ -50,7 +50,7 @@
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th data-sort-type="text">Url</th>
+	<th data-type="text">Url</th>
 	<th>Timestamp</th>
 	<th>Total time</th>	
 	<th>App time</th>

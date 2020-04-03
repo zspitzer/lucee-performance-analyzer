@@ -50,10 +50,10 @@
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th data-sort-type="text">Template</th>
+	<th data-type="text">Template</th>
 	<th>Line</th>
-	<th data-sort-type="text">Variable</th>
-	<th data-sort-type="text">Resolved Scope</th>
+	<th data-type="text">Variable</th>
+	<th data-type="text">Resolved Scope</th>
 	<th>Total</th>
 </tr>
 </thead>
