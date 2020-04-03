@@ -87,7 +87,7 @@ var perf = {
 								val = val.toLowerCase();
 								break;
 							case "numeric":
-							case "number":
+							case "number":								
 								switch (val){
 									case "":
 									case "-":
@@ -100,6 +100,8 @@ var perf = {
 								break;
 						}
 					} else {
+						if (cell.dataset.value)
+							val = cell.dataset.value;
 						// hack to handle formatted numbers with commas for thousand separtors
 						var tmpNum = val.split(",");
 						if (tmpNum.length > 1){
@@ -178,5 +180,7 @@ $(function(){
 	else
 		perf.importi18n(pluginLanguage);
 
-	$(".sort-table TH").on("click", perf.sortTable);	
+	$(".sort-table TH").on("click", function(ev){
+		perf.sortTable(ev.currentTarget, "numeric");
+	});	
 });

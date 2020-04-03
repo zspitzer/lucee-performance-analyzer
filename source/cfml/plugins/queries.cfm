@@ -1,15 +1,14 @@
 <Cfset local.debugLogs = {}>
 <cfparam name="req.maxrows" default ="1000">
-<cfadmin
-	action="getDebugEntry"
-	type="#request.adminType#"
-	returnVariable="local.debugLogs.entries">
 
-	<cfadmin action="getLoggedDebugData"
+<cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
+	password="#session["password"&request.adminType]#"
 	returnVariable="local.debugLogs.data">
 
 <cfscript>
+	if (not structKeyExists(local.debugLogs, "data"))
+		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("name,time,sql,src,line,	count,datasource,usage,cacheType");
 	request.subtitle = "Slowest Queries";
 	var local.r =0;
@@ -19,6 +18,10 @@
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
+		if (StructKeyExists(req, "since")){
+			if (dateCompare(log.starttime, req.since ) neq 1)
+				continue;
+		}
 	</cfscript>
 	<Cfset local.queries=local.log.queries>
 	<cfscript>
@@ -49,10 +52,10 @@
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th>Template</th>
+	<th data-sort-type="text">Template</th>
 	<th>Line</th>
-	<th>Name</th>
-	<th>Datasource</th>
+	<th data-sort-type="text">Name</th>
+	<th data-sort-type="text">Datasource</th>
 	<th>Total time</th>
 	<th>Min</th>
 	<th>Max</th>
@@ -74,6 +77,7 @@
 		<td align="right">#NumberFormat(local.q.executions)#</td>
 	</tr>
 </cfoutput>
+</tbody>
 <tfoot>
 	<tr>
 		<td colspan="9" align="center">
@@ -93,10 +97,9 @@
 		</cfoutput>
 	</cfif>
 </tfoot>
-</tbody>
 </table>
 <cfoutput>
-	#renderUtils.includeLang()#
+	#renderUtils.includeLang()#	
 	#renderUtils.includeJavascript("perf")#
 </cfoutput>
 

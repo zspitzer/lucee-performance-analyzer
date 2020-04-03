@@ -31,11 +31,23 @@ component extends="lucee.admin.plugin.Plugin" {
 	}
 
 	public void function _display(required string template, required struct lang, required struct app, required struct req) {
-		param name="url.xhr" default="false";
+		param name="url.xhr" default="false";		
 		request._missing_lang = {};
 		if ( not url.xhr)
 			variables.renderUtils.includeCSS("style");
 		super._display(argumentcollection=arguments);
 		variables.renderUtils.warnMissingLang(request._missing_lang);
 	}	
+
+	public function asset(struct lang, struct app, struct req) output=false {
+		param name="req.asset";
+		// dunno why, sometimes this doesn't exist and throws an error
+		if (not structKeyExists(variables, "renderUtils") )
+			variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );
+		renderUtils.returnAsset(url.asset);
+	}
+
+	public function getLang(struct lang, struct app, struct req) output=false {
+		url.xhr=true;
+	}
 }

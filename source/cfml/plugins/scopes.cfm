@@ -1,16 +1,14 @@
 <Cfset local.debugLogs = {}>
 <cfparam name="req.maxrows" default ="1000">
-<cfadmin
-	action="getDebugEntry"
-	type="#request.adminType#"
-	returnVariable="local.debugLogs.entries">
 
-	<cfadmin action="getLoggedDebugData"
+<cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
+	password="#session["password"&request.adminType]#"
 	returnVariable="local.debugLogs.data">
 
-
 <cfscript>
+	if (not structKeyExists(local.debugLogs, "data"))
+		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("template,line,scope,count,name");
 	request.subtitle = "Varscoping Problems";
 	var local.r =0;
@@ -20,6 +18,10 @@
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
+		if (StructKeyExists(req, "since")){
+			if (dateCompare(log.starttime, req.since ) neq 1)
+				continue;
+		}
 	</cfscript>
 	<Cfset local.implicitAccess=local.log.implicitAccess>
 	<cfscript>
@@ -48,10 +50,10 @@
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th>Template</th>
+	<th data-sort-type="text">Template</th>
 	<th>Line</th>
-	<th>Variable</th>
-	<th>Resolved Scope</th>
+	<th data-sort-type="text">Variable</th>
+	<th data-sort-type="text">Resolved Scope</th>
 	<th>Total</th>
 </tr>
 </thead>
@@ -62,9 +64,10 @@
 		<td>#NumberFormat(local.q_implicit.line)#</td>
 		<td>#local.q_implicit.name#</td>
 		<td>#local.q_implicit.resolvedScope#</td>
-		<td>#NumberFormat(local.q_implicit.total)#</td>
+		<td align="right">#NumberFormat(local.q_implicit.total)#</td>
 	</tr>
 </cfoutput>
+</tbody>
 <tfoot>
 	<tr>
 		<td colspan="9" align="center"><br>
@@ -84,7 +87,6 @@
 	</cfoutput>
 	</cfif>
 </tfoot>
-</tbody>
 </table>
 <cfoutput>
 	#renderUtils.includeLang()#

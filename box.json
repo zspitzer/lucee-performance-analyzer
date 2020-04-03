@@ -1,7 +1,7 @@
 {
     "name":"Lucee Performance Analyzer",
     "author":"Zac Spitzer",
-    "version":"1.0.0.1",
+    "version":"1.0.0.2",
     "bugs":"https://github.com/zspitzer/lucee-performance-analyzer/issues",
     "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-performance-analyzer/master/build/images/logo.png",
     "changelog":"",
@@ -53,7 +53,7 @@
     "type":"lucee-extensions",
     "lucee-extension-releasetype": "all",
     "lucee-extension-mincoreversion": "5.2.8.50",
-    "lucee-extension-category": "logs",
+    "lucee-extension-category": "performance",
     
     "engines" : [
         { "type" : "lucee", "version" : ">=5.2.8" }

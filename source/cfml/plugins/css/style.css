@@ -2,3 +2,7 @@ th a {
 	color: inherit;
 	text-decoration: underline;
 }
+
+.toolbar-filter {
+	padding-right: 20px;
+}
