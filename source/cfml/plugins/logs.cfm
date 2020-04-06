@@ -69,12 +69,18 @@
 		}
 		if (local.i gt req.maxrows)
 			break;
+		//dump(local.log); 
+		if (not structKeyExists(local.log, "scope"))
+			local.cgi = local.log.cgi;
+		else
+			local.cgi  = local.log.scope.cgi; // 5.3++
+		var path = local.cgi.SCRIPT_NAME;
 
-		var path = local.log.scope.cgi.SCRIPT_NAME;
-		if (len(local.log.scope.cgi.QUERY_STRING))
-			path = path & "?" & left(local.log.scope.cgi.QUERY_STRING, 50);
-		if (len(local.log.scope.cgi.QUERY_STRING) gt 50)
+		if (len(local.cgi.QUERY_STRING))
+			path = path & "?" & left(local.cgi.QUERY_STRING, 50);
+		if (len(local.cgi.QUERY_STRING) gt 50)
 			path = path & "....";
+		
 
 		var _scope = "0";	
 		if (local.log.implicitAccess.recordcount){
