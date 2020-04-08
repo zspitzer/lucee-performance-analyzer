@@ -27,7 +27,7 @@
 </cfif>
 <cfif lastLogDate neq "false" or StructKeyExists(req, "since")>    
     <p>Refresh with only new logs created since 
-        <a href="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&since=#lastlogDate#" class="toolbar-filter">
+        <a href="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&since=#DateTimeFormat(lastlogDate,"yyyy-mm-dd HH:MM:SS")#" class="toolbar-filter">
             #DateTimeFormat(lastLogDate)#
        </a>    
 </p>
