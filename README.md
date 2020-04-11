@@ -3,9 +3,19 @@ Performance Analyzer plugin for Lucee, to be used in the Lucee admin.
 
 By Zac Spitzer https://twitter.com/zackster/
 
-![install count](https://www.forgebox.io/api/v1/entry/A345C8CB-04CC-4D2B-93D50471D5105D83/badges/downloads)
+![extension install count](https://www.forgebox.io/api/v1/entry/A345C8CB-04CC-4D2B-93D50471D5105D83/badges/downloads)
+
+[Forgebox](https://www.forgebox.io/view/A345C8CB-04CC-4D2B-93D50471D5105D83)
 
 Supports Lucee 5.2.8.50 and later
+
+## Install
+
+Install via Applications page in your Lucee Administrator. It's best to install under the Web Administrator, once [this bug/patch](https://luceeserver.atlassian.net/browse/LDEV-2791) against Lucee is merged, you will be able to install the plugin once at the Server level and then access the plugin from all web contexts.
+
+## Usage
+
+You will need to enable debugging and configure a debug template in order to capture debug logs for this plugin to work.
 
 ## Features
 - Summary of top variable Scoping problems
@@ -16,6 +26,10 @@ The Build process uses [Apache Ant](https://ant.apache.org/)
 
 Simply run **ant** in the root directory to build the extension .lex file, which you can then manually install via the Lucee Administrator
 
+## Support
+
+If you run into any issues, please always describe your Lucee stack (java version, lucee version, OS, webserver, tomcat/commandbox etc) and include any stacktraces if you encounter an exception.
+
 ## Hacking
 Once installed, all the source cfml and js files can be found under the server or web context, depending where you installed it 
 
@@ -25,4 +39,6 @@ Once installed, all the source cfml and js files can be found under the server o
 Append debug=true to the url to enable debugging output
 
 If the plugin doesn't appear, append alwaysnew=1 to the url
+
+Pull requests are welcome!
 
