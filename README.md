@@ -30,7 +30,7 @@ Simply run **ant** in the root directory to build the extension .lex file, which
 
 If you run into any issues, **please always describe your Lucee stack** (java version, lucee version, OS, webserver, tomcat/commandbox etc) and include any stacktraces if you encounter an exception.
 
-Lucee doesn't yet support accessing plugins installed at the Server Admin plugins from the Web Admin, I have been working on a patch to enable this https://github.com/lucee/Lucee/pull/901
+Lucee doesn't yet support accessing plugins installed at the Server Admin plugins from the Web Admin, I have been working on a patch to enable this https://github.com/lucee/Lucee/pull/901 which was merged in with version 5.3.7.31
 
 This plugin relies on the same backend API as the built in `Debugging - Logs` view in the Lucee Admin. If you don't see any logs there, this plugin won't have anything to report on. 
 
