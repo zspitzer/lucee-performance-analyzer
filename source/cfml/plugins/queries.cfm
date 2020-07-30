@@ -22,12 +22,12 @@
 			if (dateCompare(log.starttime, req.since ) neq 1)
 				continue;
 		}
-	</cfscript>
-	<Cfset local.queries=local.log.queries>
-	<cfscript>
-		//dump(local.log); abort;
-		loop query="#local.queries#" {
-			queryAddRow(q, queryRowData(local.queries, local.queries.currentrow));
+		// if queries isn't enabled in debug settings, there won't be data
+		if (structKeyExists(local.log, "queries")){
+			local.queries=local.log.queries;
+			loop query="#local.queries#" {
+				queryAddRow(q, queryRowData(local.queries, local.queries.currentrow));
+			}
 		}
 	</cfscript>
 </cfloop>
