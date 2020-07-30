@@ -22,11 +22,12 @@
 			if (dateCompare(log.starttime, req.since ) neq 1)
 				continue;
 		}
-	</cfscript>
-	<Cfset local.implicitAccess=local.log.implicitAccess>
-	<cfscript>
-		loop query="#local.implicitAccess#" {
-			queryAddRow(q, queryRowData(local.implicitAccess, local.implicitAccess.currentrow));
+		// if implicitAccess isn't enabled in debug settings, there won't be data
+		if (structKeyExists(local.log, "implicitAccess")){
+			local.implicitAccess=local.log.implicitAccess;	
+			loop query="#local.implicitAccess#" {
+				queryAddRow(q, queryRowData(local.implicitAccess, local.implicitAccess.currentrow));
+			}
 		}
 	</cfscript>
 </cfloop>
