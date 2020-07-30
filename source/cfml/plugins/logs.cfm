@@ -83,7 +83,7 @@
 		
 
 		var _scope = "0";	
-		if (local.log.implicitAccess.recordcount){
+		if (structKeyExists(local.log, "implicitAccess") and local.log.implicitAccess.recordcount){
 			_scope = QueryReduce( local.log.implicitAccess,
 				function(problems=0, row, rowNumber, recordset ){
 				return problems + row.count;
@@ -92,11 +92,12 @@
 		var _total=0;
 		var _query=0;
 		var _app=0;
-		
-		loop query="local.log.pages"{
-			_total += local.log.pages.total;
-			_query+= local.log.pages.query;
-			_app += local.log.pages.app;
+		if (structKeyExists(local.log, "pages")){
+			loop query="local.log.pages"{
+				_total += local.log.pages.total;
+				_query+= local.log.pages.query;
+				_app += local.log.pages.app;
+			}
 		}
 	</cfscript>
 	<cfoutput>
@@ -113,7 +114,11 @@
 		<td align="right">#prettyTime(_app)#</td>
 		<td align="right">#prettyTime(_query)#</td>
 		<td align="right">#prettyNum(_scope)#</td>
-		<td align="right">#prettyNum(arrayLen(local.log.exceptions))#</td>
+		<cfif structKeyExists(local.log, "exceptions")>
+			<td align="right">#prettyNum(arrayLen(local.log.exceptions))#</td>
+		<cfelse>
+			<td></td>
+		</cfif>
 	</tr>
 	</cfoutput>
 </cfloop>
