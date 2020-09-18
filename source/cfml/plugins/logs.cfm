@@ -25,7 +25,7 @@
 	function prettyNum(n){
 		if (n == 0)
 			return "";
-		 
+
 		 if (int(n)  eq 0)
 		 	return "";
 		return NumberFormat(n);
@@ -35,7 +35,7 @@
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
-		local.log = local.debugLogs.data[local.i];		
+		local.log = local.debugLogs.data[local.i];
 		if (StructKeyExists(req, "since")){
 			if (dateCompare(log.starttime, req.since ) neq 1)
 				continue;
@@ -52,24 +52,25 @@
 <tr>
 	<th data-type="text">Url</th>
 	<th>Timestamp</th>
-	<th>Total time</th>	
+	<th>Total time</th>
 	<th>App time</th>
 	<th>Query time</th>
 	<th>Scope Problems</th>
-	<th>Exceptions</th>	
+	<th>Exceptions</th>
+	<th>Size (Kb)</th>
 </tr>
 </thead>
 <tbody>
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
-		local.log = local.debugLogs.data[local.i];		
+		local.log = local.debugLogs.data[local.i];
 		if (StructKeyExists(req, "since")){
 			if (dateCompare(log.starttime, req.since ) neq 1)
 				continue;
 		}
 		if (local.i gt req.maxrows)
 			break;
-		//dump(local.log); 
+		//dump(local.log);
 		if (not structKeyExists(local.log, "scope"))
 			local.cgi = local.log.cgi;
 		else
@@ -80,9 +81,9 @@
 			path = path & "?" & left(local.cgi.QUERY_STRING, 50);
 		if (len(local.cgi.QUERY_STRING) gt 50)
 			path = path & "....";
-		
 
-		var _scope = "0";	
+
+		var _scope = "0";
 		if (structKeyExists(local.log, "implicitAccess") and local.log.implicitAccess.recordcount){
 			_scope = QueryReduce( local.log.implicitAccess,
 				function(problems=0, row, rowNumber, recordset ){
@@ -119,6 +120,7 @@
 		<cfelse>
 			<td></td>
 		</cfif>
+		<td>#prettyNum(sizeOf(local.log)/1000)#</td>
 	</tr>
 	</cfoutput>
 </cfloop>
@@ -142,7 +144,6 @@
 </tfoot>
 </table>
 <cfoutput>
-    #renderUtils.includeLang()#    
+    #renderUtils.includeLang()#
 	#renderUtils.includeJavascript("perf")#
 </cfoutput>
-
