@@ -120,7 +120,7 @@
 		<cfelse>
 			<td></td>
 		</cfif>
-		<td>#prettyNum(sizeOf(local.log)/1000)#</td>
+		<td align="right">#prettyNum(sizeOf(local.log)/1000)#</td>
 	</tr>
 	</cfoutput>
 </cfloop>
