@@ -6,3 +6,7 @@ th a {
 .toolbar-filter {
 	padding-right: 20px;
 }
+
+.log-totals TD {
+	font-weight: bolder;
+}
