@@ -52,6 +52,7 @@
 	local.total_scope = 0;
 	local.total_exp = 0;
 	local.log = {};
+	local.rows = 0;
 </cfscript>
 
 <cfsavecontent variable="body">
@@ -65,6 +66,7 @@
 			}
 			if (local.i gt req.maxrows)
 				break;
+			local.rows++;
 			//dump(local.log);
 			if (not structKeyExists(local.log, "scope"))
 				local.cgi = local.log.cgi;
@@ -162,11 +164,15 @@
 	<th>Exceptions</th>
 	<th>Size (Kb)</th>
 </tr>
-<cfoutput>#totals#</cfoutput>
+<cfif local.rows gt 0>
+	<cfoutput>#totals#</cfoutput>
+</cfif>
 </thead>
 <cfoutput>#body#</cfoutput>
 <tfoot>
-	<cfoutput>#totals#</cfoutput>
+	<cfif local.rows gt 0>
+		<cfoutput>#totals#</cfoutput>
+	</cfif>
 	<tr>
 		<td colspan="9" align="center">
 			<br>
