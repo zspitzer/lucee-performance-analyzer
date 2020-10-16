@@ -55,11 +55,12 @@
 				sessions = context.getAllCFSessionScopes();
 
 				local.rows++;
-
-				//local.app_size += sizeOf(apps[app]);
-				local.app_keys += structCount(apps[app]);
 			</cfscript>
 			<cfloop collection="#apps#" item="app">
+				<cfscript>
+					local.app_size += sizeOf(apps[app]);
+					local.app_keys += structCount(apps[app]);
+				</cfscript>
 				<tr>
 					<td>#config.getRootDirectory()#</td>
 					<td>#app#</td>
@@ -85,12 +86,9 @@
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td align="right">#prettyTime(local.app_size)#</td>
-			<td align="right">#prettyNum(local.app_keys)#</td>
-			<td align="right">#prettyNum(local.session_count)#</td>
+			<td align="right">#prettyNum(local.app_size)#</td>
+			<td align="right">#prettyNum(local.app_keys, false)#</td>
+			<td align="right">#prettyNum(local.session_count, false)#</td>
 			<td align="right">#prettyNum(local.session_size)#</td>
 		</cfoutput>
 	</tr>
