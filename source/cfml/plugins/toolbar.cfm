@@ -1,6 +1,6 @@
 <cfscript>
-    local.reports = ["Scopes","Queries","Logs"];
-    lastLogDate = false;
+    local.reports = ["Scopes","Queries","Logs","Memory"];
+	lastLogDate = false;
     if (ArrayLen(local.debugLogs.data))
         lastLogDate =  local.debugLogs.data[ArrayLen(local.debugLogs.data)].starttime;
     urlExtra = "";
@@ -15,21 +15,21 @@
             <cfif req.pLuginAction eq report></b></cfif>
         </a>
     </cfloop>
-</cfoutput> 
+</cfoutput>
 </div>
 <cfoutput>
 <cfif StructKeyExists(req, "since")>
-    <p>Filter: Only reporting logs since #dateTimeFormat(req.since)# 
+    <p>Filter: Only reporting logs since #dateTimeFormat(req.since)#
         <a href="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#" class="toolbar-filter">
          (remove filter)
-        </a> 
+        </a>
     </p>
 </cfif>
-<cfif lastLogDate neq "false" or StructKeyExists(req, "since")>    
-    <p>Refresh with only new logs created since 
+<cfif lastLogDate neq "false" or StructKeyExists(req, "since")>
+    <p>Refresh with only new logs created since
         <a href="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&since=#DateTimeFormat(lastlogDate,"yyyy-mm-dd HH:MM:SS")#" class="toolbar-filter">
             #DateTimeFormat(lastLogDate)#
-       </a>    
+       </a>
 </p>
 </cfif>
 </cfoutput>

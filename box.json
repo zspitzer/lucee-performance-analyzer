@@ -1,7 +1,7 @@
 {
     "name":"Lucee Performance Analyzer",
     "author":"Zac Spitzer",
-    "version":"1.0.0.9",
+    "version":"1.0.0.10",
     "bugs":"https://github.com/zspitzer/lucee-performance-analyzer/issues",
     "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-performance-analyzer/master/build/images/logo.png",
     "changelog":"",

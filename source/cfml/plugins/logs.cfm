@@ -170,7 +170,7 @@
 </thead>
 <cfoutput>#body#</cfoutput>
 <tfoot>
-	<cfif local.rows gt 0>
+	<cfif local.rows gt 10>
 		<cfoutput>#totals#</cfoutput>
 	</cfif>
 	<tr>
