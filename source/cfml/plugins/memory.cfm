@@ -23,6 +23,12 @@
 		else
 			return NumberFormat(n);
 	}
+
+	local.rows = 1;
+	local.app_size = sizeOf(serverScope);
+	local.app_keys = structCount(serverScope);
+	local.session_size  = 0;
+	local.session_count  = 0;
 </cfscript>
 
 <cfadmin action="getLoggedDebugData"
@@ -30,8 +36,68 @@
 	password="#session["password"&request.adminType]#"
 	returnVariable="local.debugLogs.data">
 
+
+<cfsavecontent variable="body">
+	<cfoutput>
+		<tr>
+			<td>Server Scope</td>
+			<td></td>
+			<td align="right">#prettyNum(sizeOf(serverScope))#</td>
+			<td align="right">#prettyNum(structCount(serverScope), false)#</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<cfloop collection="#webContexts#" item="configName">
+			<cfscript>
+				config = webContexts[configName];
+				context = config.getFactory().getScopeContext();
+				apps = context.getAllApplicationScopes();
+				sessions = context.getAllCFSessionScopes();
+
+				local.rows++;
+
+				//local.app_size += sizeOf(apps[app]);
+				local.app_keys += structCount(apps[app]);
+			</cfscript>
+			<cfloop collection="#apps#" item="app">
+				<tr>
+					<td>#config.getRootDirectory()#</td>
+					<td>#app#</td>
+					<td align="right">#prettyNum(sizeOf(apps[app]))#</td>
+					<td align="right">#prettyNum(structCount(apps[app]), false)#</td>
+					<cfif structKeyExists(sessions, app)>
+						<cfscript>
+							local.session_count += structCount(sessions[app]);
+							local.session_size += sizeOf(sessions[app]);
+						</cfscript>
+						<td align="right">#prettyNum(structCount(sessions[app]), false)#</td>
+						<td align="right">#prettyNum(sizeOf(sessions[app]))#</td>
+					<cfelse>
+						<td></td>
+						<td></td>
+					</cfif>
+				</tr>
+			</cfloop>
+		</cfloop>
+	</cfoutput>
+</cfsavecontent>
+<cfsavecontent variable="totals">
+	<tr class="log-totals">
+		<td colspan="2" align="center">Totals</td>
+		<cfoutput>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td align="right">#prettyTime(local.app_size)#</td>
+			<td align="right">#prettyNum(local.app_keys)#</td>
+			<td align="right">#prettyNum(local.session_count)#</td>
+			<td align="right">#prettyNum(local.session_size)#</td>
+		</cfoutput>
+	</tr>
+</cfsavecontent>
+
 <cfoutput>
-	<p>This report is based on all the scopes server, application, session currently in memory, click column headers to sort</p>
+	<p>Size of the Server, Application and Session scopes currently in memory, click column headers to sort</p>
 </cfoutput>
 <table class="maintbl checkboxtbl sort-table">
 <thead>
@@ -43,53 +109,16 @@
 	<th>Session Count</th>
 	<th>Size Kb</th>
 </tr>
+<cfif local.rows gt 0>
+	<cfoutput>#totals#</cfoutput>
+</cfif>
 </thead>
 <tbody>
-<cfoutput>
-	<cfloop collection="#webContexts#" item="configName">
-		<cfscript>
-			config = webContexts[configName];
-			context = config.getFactory().getScopeContext();
-			apps = context.getAllApplicationScopes();
-			sessions = context.getAllCFSessionScopes();
-		</cfscript>
-		<tr>
-			<td>Server Scope</td>
-			<td></td>
-			<td align="right">#prettyNum(sizeOf(serverScope))#</td>
-			<td align="right">#prettyNum(structCount(serverScope), false)#</td>
-			<td></td>
-			<td></td>
-		</tr>
-		<cfloop collection="#apps#" item="app">
-			<tr>
-				<td>#config.getRootDirectory()#</td>
-				<td>#app#</td>
-				<td align="right">#prettyNum(sizeOf(apps[app]))#</td>
-				<td align="right">#prettyNum(structCount(apps[app]), false)#</td>
-				<cfif structKeyExists(sessions, app)>
-					<td align="right">#prettyNum(structCount(sessions[app]), false)#</td>
-					<td align="right">#prettyNum(sizeOf(sessions[app]))#</td>
-				<cfelse>
-					<td></td>
-					<td></td>
-				</cfif>
-			</tr>
-		</cfloop>
-	</cfloop>
-</cfoutput>
+	<cfoutput>#body#</cfoutput>
 </tbody>
 <tfoot>
-	<tr>
-		<td colspan="9" align="center">
-		</td>
-	</tr>
-	<cfif false>
-		<cfoutput>
-		<tr>
-			<td colspan="9" align="center"><br>Showing the top #req.maxrows# scope problems by count (from #src_rows#)
-		</tr>
-	</cfoutput>
+	<cfif local.rows gt 10>
+		<cfoutput>#totals#</cfoutput>
 	</cfif>
 </tfoot>
 </table>
