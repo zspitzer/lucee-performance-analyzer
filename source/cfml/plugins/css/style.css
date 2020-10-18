@@ -10,3 +10,8 @@ th a {
 .log-totals TD {
 	font-weight: bolder;
 }
+
+table pre {
+	margin: 0;
+	font: unset;
+}
