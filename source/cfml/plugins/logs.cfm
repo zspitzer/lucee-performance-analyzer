@@ -45,6 +45,13 @@
 		return NumberFormat(n);
 	}
 	local.midnight = createDate(year(now()), month(now()), day(now()) ); // hide todays date
+
+	function hasJavaMethod(obj,name) {
+		loop array=obj.getClass().getMethods() item="local.m" {
+			if(m.getName()==name) return true;
+		}
+		return false;
+	}
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
@@ -164,7 +171,9 @@
 
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-	<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" onclick='document.location="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&doPurge=true"'>
+	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(),"purge")>
+		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" onclick='document.location="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&doPurge=true"'>
+	</cfif>
 </cfoutput>
 
 
