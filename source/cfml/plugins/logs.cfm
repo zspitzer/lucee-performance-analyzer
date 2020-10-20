@@ -1,5 +1,19 @@
 <Cfset local.debugLogs = {}>
 <cfparam name="req.maxrows" default ="1000">
+<cfparam name="req.doPurge" default ="false">
+<cfif req.doPurge>
+	<cftry>
+		<cfadmin action="purgeDebugPool"
+			type="#request.adminType#"
+			password="#session["password"&request.adminType]#">
+		<cfcatch>
+			<cfoutput>
+				<b>Sorry, Purge logs failed, it was added in Lucee 5.3.8.80 (this is #server.lucee.version#)</b>
+			</cfoutput>
+			<cfdump var=#cfcatch# expand=false label='cfadmin action="purgeDebugPool2" failed'>
+		</cfcatch>
+	</cftry>
+</cfif>
 
 <cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
@@ -150,7 +164,11 @@
 
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
+	<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" onclick='document.location="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&doPurge=true"'>
 </cfoutput>
+
+
+
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
