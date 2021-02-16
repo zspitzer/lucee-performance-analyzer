@@ -80,7 +80,7 @@
 			<td>#q_threads.name#</td>
 			<td>#q_threads.threadState#</td>
 			<td><pre>#q_threads.stack#</pre></td>
-			<td>#DecimalFormat(q_threads.cpuTime)#</td>
+			<td align="right">#DecimalFormat(q_threads.cpuTime)#</td>
 		</tr>
 	</cfoutput>
 </tbody>
