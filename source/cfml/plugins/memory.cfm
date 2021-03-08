@@ -6,22 +6,22 @@
 		type="#request.adminType#"
 		password="#session["password"&request.adminType]#"
 		returnVariable="local.debugLogs.data";
-	serverScope = getPageContext().scope(createObject("java", "lucee.runtime.type.scope.Scope").SCOPE_SERVER)
-	configServer= getPageContext().getConfig().getConfigServer(session["password"&request.adminType]);
-	webContexts = configServer.getConfigWebs();
+	local.serverScope = getPageContext().scope(createObject("java", "lucee.runtime.type.scope.Scope").SCOPE_SERVER)
+	local.configServer= getPageContext().getConfig().getConfigServer(session["password"&request.adminType]);
+	local.webContexts = configServer.getConfigWebs();
 	request.subtitle = "Memory Scopes";
 	cfinclude(template="toolbar.cfm");
 
 	function prettyNum(n=0, large=true){
-		if (n == 0)
+		if (arguments.n == 0)
 			return "";
 
-		 if (int(n)  eq 0)
+		 if (int(arguments.n)  eq 0)
 			 return "";
 		if (arguments.large)
-			return NumberFormat(n/1024);
+			return NumberFormat(arguments.n/1024);
 		else
-			return NumberFormat(n);
+			return NumberFormat(arguments.n);
 	}
 
 	local.rows = 1;
@@ -37,7 +37,7 @@
 	returnVariable="local.debugLogs.data">
 
 
-<cfsavecontent variable="body">
+<cfsavecontent variable="local.body">
 	<cfoutput>
 		<tr>
 			<td>Server Scope</td>
@@ -47,16 +47,16 @@
 			<td></td>
 			<td></td>
 		</tr>
-		<cfloop collection="#webContexts#" item="configName">
+		<cfloop collection="#webContexts#" item="local.configName">
 			<cfscript>
-				config = webContexts[configName];
-				context = config.getFactory().getScopeContext();
-				apps = context.getAllApplicationScopes();
-				sessions = context.getAllCFSessionScopes();
+				local.config = webContexts[configName];
+				local.context = config.getFactory().getScopeContext();
+				local.apps = context.getAllApplicationScopes();
+				local.sessions = context.getAllCFSessionScopes();
 
 				local.rows++;
 			</cfscript>
-			<cfloop collection="#apps#" item="app">
+			<cfloop collection="#apps#" item="local.app">
 				<cfscript>
 					local.app_size += sizeOf(apps[app]);
 					local.app_keys += structCount(apps[app]);
@@ -82,7 +82,7 @@
 		</cfloop>
 	</cfoutput>
 </cfsavecontent>
-<cfsavecontent variable="totals">
+<cfsavecontent variable="local.totals">
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
@@ -121,6 +121,6 @@
 </tfoot>
 </table>
 <cfoutput>
-	#renderUtils.includeLang()#
-	#renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeLang()#
+	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>

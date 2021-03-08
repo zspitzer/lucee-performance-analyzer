@@ -1,7 +1,7 @@
 <Cfset local.debugLogs = {}>
-<cfparam name="req.maxrows" default ="1000">
-<cfparam name="req.doPurge" default ="false">
-<cfif req.doPurge>
+<cfparam name="arguments.req.maxrows" default ="1000">
+<cfparam name="arguments.req.doPurge" default ="false">
+<cfif arguments.req.doPurge>
 	<cftry>
 		<cfadmin action="purgeDebugPool"
 			type="#request.adminType#"
@@ -28,27 +28,27 @@
 	var local.r =0;
 	cfinclude(template="toolbar.cfm");
 	function prettyTime(n){
-		if (n == 0)
+		if (arguments.n == 0)
 			return "";
-		 var s = n/(1000*1000);
+		 var s = arguments.n/(1000*1000);
 		 if (int(s)  eq 0)
 		 	return "";
 		return NumberFormat(s);
 	}
 
 	function prettyNum(n){
-		if (n == 0)
+		if (arguments.n == 0)
 			return "";
 
-		 if (int(n)  eq 0)
+		 if (int(arguments.n)  eq 0)
 		 	return "";
-		return NumberFormat(n);
+		return NumberFormat(arguments.n);
 	}
 	local.midnight = createDate(year(now()), month(now()), day(now()) ); // hide todays date
 
 	function hasJavaMethod(obj,name) {
-		loop array=obj.getClass().getMethods() item="local.m" {
-			if(m.getName()==name) return true;
+		loop array=arguments.obj.getClass().getMethods() item="local.m" {
+			if(m.getName()==arguments.name) return true;
 		}
 		return false;
 	}
@@ -57,8 +57,8 @@
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(req, "since")){
-			if (dateCompare(log.starttime, req.since ) neq 1)
+		if (StructKeyExists(arguments.req, "since")){
+			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
 				continue;
 		}
 	</cfscript>
@@ -76,16 +76,16 @@
 	local.rows = 0;
 </cfscript>
 
-<cfsavecontent variable="body">
+<cfsavecontent variable="local.body">
 	<tbody>
 	<cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 		<cfscript>
 			local.log = local.debugLogs.data[local.i];
-			if (StructKeyExists(req, "since")){
-				if (dateCompare(log.starttime, req.since ) neq 1)
+			if (StructKeyExists(arguments.req, "since")){
+				if (dateCompare(log.starttime, arguments.req.since ) neq 1)
 					continue;
 			}
-			if (local.i gt req.maxrows)
+			if (local.i gt arguments.req.maxrows)
 				break;
 			local.rows++;
 			//dump(local.log);
@@ -105,7 +105,7 @@
 			if (structKeyExists(local.log, "implicitAccess") and local.log.implicitAccess.recordcount){
 				_scope = QueryReduce( local.log.implicitAccess,
 					function(problems=0, row, rowNumber, recordset ){
-					return problems + row.count;
+					return arguments.problems + arguments.row.count;
 				});
 			}
 			var _total=0;
@@ -154,7 +154,7 @@
 	</cfloop>
 	</tbody>
 </cfsavecontent>
-<cfsavecontent variable="totals">
+<cfsavecontent variable="local.totals">
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
@@ -172,7 +172,8 @@
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
 	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(),"purge")>
-		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" onclick='document.location="?action=#req.action#&plugin=#req.plugin#&pluginAction=#req.pluginAction#&doPurge=true"'>
+		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" 
+			onclick='document.location="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&doPurge=true"'>
 	</cfif>
 </cfoutput>
 
@@ -208,16 +209,16 @@
 		</cfif>
 		</td>
 	</tr>
-	<cfif src_rows gt req.maxrows>
+	<cfif src_rows gt arguments.req.maxrows>
 		<cfoutput>
 		<tr>
-			<td colspan="9"><br>Showing the top #req.maxrows# logs(from #src_rows#)
+			<td colspan="9"><br>Showing the top #arguments.req.maxrows# logs(from #src_rows#)
 		</tr>
 		</cfoutput>
 	</cfif>
 </tfoot>
 </table>
 <cfoutput>
-    #renderUtils.includeLang()#
-	#renderUtils.includeJavascript("perf")#
+    #variables.renderUtils.includeLang()#
+	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>
