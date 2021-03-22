@@ -18,8 +18,13 @@ Install via Applications page in your Lucee Administrator. It's best to install 
 You will need to enable debugging and configure a debug template in order to capture debug logs for this plugin to work.
 
 ## Features
-- Summary of top variable Scoping problems
-- Summary of slowest sql queries
+- Top variable Scoping problems Report
+- Slowest SQL queries Report
+- Slowest Templates / Functions Report
+- Aggregate Timers Report
+- Aggregate Exceptions Report
+- Lucee Thread Report
+- Memory Report by Application / Session
 
 ## Building
 The Build process uses [Apache Ant](https://ant.apache.org/) 
@@ -28,7 +33,7 @@ Simply run **ant** in the root directory to build the extension .lex file, which
 
 ## Support
 
-If you run into any issues, **please always describe your Lucee stack** (java version, lucee version, OS, webserver, tomcat/commandbox etc) and include any stacktraces if you encounter an exception.
+If you run into any issues, **please always describe your Lucee stack** (Java version, Lucee version, OS, webserver, tomcat/commandbox etc) and include any stacktraces if you encounter an exception.
 
 Lucee doesn't yet support accessing plugins installed at the Server Admin plugins from the Web Admin, I have been working on a patch to enable this https://github.com/lucee/Lucee/pull/901 which was merged in with version 5.3.7.31
 
