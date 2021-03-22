@@ -33,6 +33,7 @@ component extends="lucee.admin.plugin.Plugin" {
 	public void function _display(required string template, required struct lang, required struct app, required struct req) {
 		param name="url.xhr" default="false";		
 		request._missing_lang = {};
+		request.title = "Perf Analyzer";
 		if ( not url.xhr)
 			variables.renderUtils.includeCSS("style");
 		super._display(argumentcollection=arguments);

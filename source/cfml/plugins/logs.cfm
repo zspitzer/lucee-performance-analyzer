@@ -1,6 +1,7 @@
 <Cfset local.debugLogs = {}>
 <cfparam name="arguments.req.maxrows" default ="1000">
 <cfparam name="arguments.req.doPurge" default ="false">
+<cfparam name="arguments.req.consoleDump" default ="false">
 <cfif arguments.req.doPurge>
 	<cftry>
 		<cfadmin action="purgeDebugPool"
@@ -93,13 +94,10 @@
 				local.cgi = local.log.cgi;
 			else
 				local.cgi  = local.log.scope.cgi; // 5.3++
-			var path = local.cgi.SCRIPT_NAME;
+			var path = local.cgi.REQUEST_URL
 
-			if (len(local.cgi.QUERY_STRING))
-				path = path & "?" & left(local.cgi.QUERY_STRING, 50);
-			if (len(local.cgi.QUERY_STRING) gt 50)
-				path = path & "....";
-
+			if (local.cgi.REQUEST_METHOD eq "POST")
+				path = "POST #PATH#";
 
 			var _scope = "0";
 			if (structKeyExists(local.log, "implicitAccess") and local.log.implicitAccess.recordcount){
@@ -128,6 +126,11 @@
 			local.total_scope += _scope;
 		</cfscript>
 		<cfoutput>
+			<cfif arguments.req.consoleDump>
+				<script>
+					console.log("#local.log.scope.cgi.request_url#", #serializeJson(local.log.scope.cgi)#);
+				</script>
+			</cfif>
 		<tr>
 			<td><a href="?action=debugging.logs&action2=detail&id=#hash(local.log.id&":"&local.log.startTime)#">#path#</td>
 			<td data-value=#DateDiff('s', "2000-1-1", local.log.starttime)#>

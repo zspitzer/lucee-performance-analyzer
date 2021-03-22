@@ -1,5 +1,5 @@
 <cfscript>
-    local.reports = ["Logs","Scopes","Queries","Memory","Threads"];
+    local.reports = ["Logs","Scopes","Queries","Timers","Exceptions","Memory","Threads"];
 	local.lastLogDate = false;
     if (ArrayLen(local.debugLogs.data))
         lastLogDate =  local.debugLogs.data[ArrayLen(local.debugLogs.data)].starttime;
@@ -7,6 +7,7 @@
     if ( StructKeyExists(arguments.req, "since") and arguments.req.since)
         urlExtra = "since=#arguments.req.since#";
     local.cfquery = ""; // hide from scopes
+    request.title = "Performance Analyzer";
 </cfscript>
 <div class="btn-group" role="group">
 <cfoutput>

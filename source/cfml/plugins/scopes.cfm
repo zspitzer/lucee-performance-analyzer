@@ -1,5 +1,6 @@
 <cfset local.debugLogs = {}>
 <cfparam name="arguments.req.maxrows" default ="1000">
+<cfparam name="arguments.req.template" default ="">
 
 <cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
@@ -40,6 +41,9 @@
 <cfquery name="local.q_implicit" dbtype="query">
 	select  template, line, resolvedScope, sum(total) total ,name
 	from    q
+	<cfif len(arguments.req.template)>
+		where template = <cfqueryparam value="#arguments.req.template#" sqltype="varchar">
+	</cfif>
 	group by template, line, resolvedScope, name
 	order by total desc
 </cfquery>
@@ -47,6 +51,11 @@
 
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
+	<cfif len(arguments.req.template)>
+		<p><b>Filtering by Template:</b>  #encodeForHtml(arguments.req.template)# 
+			&nbsp; <a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#" class="toolbar-filter">Remove Filter</a>
+		</p>
+	</cfif>
 </cfoutput>
 <table class="maintbl checkboxtbl sort-table">
 <thead>
@@ -61,7 +70,8 @@
 <tbody>
 <cfoutput query="local.q_implicit" maxrows="#arguments.req.maxrows#">
 	<tr>
-		<td>#local.q_implicit.template#</td>
+		<td><a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&template=#urlEncodedFormat(local.q_implicit.template)#" 
+			title="show only problems from this template" class="toolbar-filter">#local.q_implicit.template#</a></td>
 		<td>#NumberFormat(local.q_implicit.line)#</td>
 		<td>#local.q_implicit.name#</td>
 		<td>#local.q_implicit.resolvedScope#</td>
@@ -80,7 +90,7 @@
 		</cfif>
 		</td>
 	</tr>
-	<cfif src_rows gt arguments.req.maxrows>
+	<cfif src_rows gt arguments.req.maxrows and len(arguments.req.template) eq 0>
 		<cfoutput>
 		<tr>
 			<td colspan="9" align="center"><br>Showing the top #req.maxrows# scope problems by count (from #src_rows#)

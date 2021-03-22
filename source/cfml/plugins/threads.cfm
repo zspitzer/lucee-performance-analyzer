@@ -38,6 +38,10 @@
 			str&=ste;
 			str&="<br>";
 		}
+		local.servlet = find("lucee.loader.servlet.CFMLServlet.service", str);
+		if (local.servlet gt 1)
+			str = mid(str,1, local.servlet-1) & "...";
+
 		local.r = queryAddRow(q_threads);
 		//if(!find("PageContextImpl",str)) continue;
 		QuerySetCell(q_threads, "name", t.name, r);
