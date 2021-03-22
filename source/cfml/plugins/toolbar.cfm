@@ -1,5 +1,5 @@
 <cfscript>
-    local.reports = ["Logs","Scopes","Queries","Timers","Exceptions","Memory","Threads"];
+    local.reports = ["Logs","Templates", "Scopes","Queries","Timers","Exceptions","Memory","Threads"];
 	local.lastLogDate = false;
     if (ArrayLen(local.debugLogs.data))
         lastLogDate =  local.debugLogs.data[ArrayLen(local.debugLogs.data)].starttime;

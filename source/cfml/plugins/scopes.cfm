@@ -42,7 +42,7 @@
 	select  template, line, resolvedScope, sum(total) total ,name
 	from    q
 	<cfif len(arguments.req.template)>
-		where template = <cfqueryparam value="#arguments.req.template#" sqltype="varchar">
+		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
 	</cfif>
 	group by template, line, resolvedScope, name
 	order by total desc
