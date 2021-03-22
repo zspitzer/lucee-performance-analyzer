@@ -14,6 +14,24 @@
 	request.subtitle = "Timers";
 	var local.r =0;
 	cfinclude(template="toolbar.cfm");
+
+	function prettyTime(n){
+		if (arguments.n == 0)
+			return "";
+		 var s = arguments.n/(1000*1000);
+		 if (int(s)  eq 0)
+		 	return "";
+		return NumberFormat(s);
+	}
+
+	function prettyNum(n){
+		if (arguments.n == 0)
+			return "";
+
+		 if (int(arguments.n)  eq 0)
+		 	return "";
+		return NumberFormat(arguments.n);
+	}
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
