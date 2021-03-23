@@ -58,7 +58,7 @@
 	select threadState, count(threadState) as threads, sum(cpuTime) as cpuTotal
 	from  q_threads
 	group by threadState
-	order by cpuTime desc
+	order by cpuTotal desc
 </cfquery>
 
 <b>Summary:</b>
