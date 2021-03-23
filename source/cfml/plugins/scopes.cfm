@@ -36,7 +36,7 @@
 	from    q
 </cfquery>
 
-<cfquery name="local.q_implicit" dbtype="query">
+<cfquery name="local.q" dbtype="query">
 	select  template, line, resolvedScope, sum(total) total ,name
 	from    q
 	<cfif len(arguments.req.template)>
@@ -60,13 +60,13 @@
 </tr>
 </thead>
 <tbody>
-<cfoutput query="local.q_implicit" maxrows="#arguments.req.maxrows#">
+<cfoutput query="local.q" maxrows="#arguments.req.maxrows#">
 	<tr>
 		#renderTemplateLink(arguments.req, local.q.template)#
-		<td>#NumberFormat(local.q_implicit.line)#</td>
-		<td>#local.q_implicit.name#</td>
-		<td>#local.q_implicit.resolvedScope#</td>
-		<td align="right">#NumberFormat(local.q_implicit.total)#</td>
+		<td>#NumberFormat(local.q.line)#</td>
+		<td>#local.q.name#</td>
+		<td>#local.q.resolvedScope#</td>
+		<td align="right">#NumberFormat(local.q.total)#</td>
 	</tr>
 </cfoutput>
 </tbody>
@@ -75,7 +75,7 @@
 		<td colspan="9" align="center">
 		<cfif local.debugLogs.data.len() eq 0>
 			No debug logs found? Is debugging enabled?
-		<cfelseif local.q_implicit.recordcount eq 0>
+		<cfelseif local.q.recordcount eq 0>
 			Great! No Implicit access found, but is it enabled?
 		<cfelse>
 		</cfif>
