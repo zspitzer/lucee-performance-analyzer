@@ -11,11 +11,11 @@ Supports Lucee 5.2.8.50 and later
 
 ## Install
 
-Install via Applications page in your Lucee Administrator. It's best to install under the Web Administrator, once [this bug/patch](https://luceeserver.atlassian.net/browse/LDEV-2791) against Lucee is merged, you will be able to install the plugin once at the Server level and then access the plugin from all web contexts.
+Install via Applications page in your Lucee Administrator. It's best to install under the Web Administrator, once [this bug/patch](https://luceeserver.atlassian.net/browse/LDEV-2791) against Lucee is merged, you will be able to install the plugin once at the Server level and then access the plugin from all web contexts. After installing the plugin restart Lucee to make the plugin accessible to your Lucee Server/Web Administrator. 
 
 ## Usage
 
-You will need to enable debugging and configure a debug template in order to capture debug logs for this plugin to work.
+You will need to enable debugging and configure a debug template in order to capture debug logs for this plugin to work. To enable debugging log into Lucee Administrator, click in the "Debugging" section on "Settings" and enable "Database Activity" with "Query Usage", "Exceptions", "Timer" and "Implicit variable Access". Then make sure to populate the debugging log by navigating/opening a cfml page with your browser, e.g. http://localhost:8888/index.cfm. After this you'll be able to see the collected information in the "Performance Analyzer" section in the Lucee Web Administrator of that web context. 
 
 ## Features
 - Top variable Scoping problems Report
