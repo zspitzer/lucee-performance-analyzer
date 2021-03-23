@@ -15,3 +15,12 @@ table pre {
 	margin: 0;
 	font: unset;
 }
+
+.maintbl {
+	width:auto;
+}
+
+#innercontent {
+	margin-top: 10px;
+	margin-left: 3px;
+}

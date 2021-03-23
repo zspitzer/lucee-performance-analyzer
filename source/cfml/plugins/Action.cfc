@@ -25,20 +25,22 @@
 component extends="lucee.admin.plugin.Plugin" {
 
 	public void function init(required struct lang, required struct app) {
-		variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );		
+		variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );
 		variables._lang = arguments.lang;
 		setting showdebugoutput="true";
 	}
 
 	public void function _display(required string template, required struct lang, required struct app, required struct req) {
-		param name="url.xhr" default="false";		
+		param name="url.xhr" default="false";
 		request._missing_lang = {};
 		request.title = "Perf Analyzer";
 		if ( not url.xhr)
 			variables.renderUtils.includeCSS("style");
+		cfinclude(template="toolbar.cfm");
 		super._display(argumentcollection=arguments);
+		cfinclude(template="related.cfm");
 		variables.renderUtils.warnMissingLang(request._missing_lang);
-	}	
+	}
 
 	public function asset(struct lang, struct app, struct req) output=false {
 		param name="req.asset";

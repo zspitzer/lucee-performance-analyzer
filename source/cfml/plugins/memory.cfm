@@ -9,8 +9,7 @@
 	local.serverScope = getPageContext().scope(createObject("java", "lucee.runtime.type.scope.Scope").SCOPE_SERVER)
 	local.configServer= getPageContext().getConfig().getConfigServer(session["password"&request.adminType]);
 	local.webContexts = configServer.getConfigWebs();
-	request.subtitle = "Memory Scopes";
-	cfinclude(template="toolbar.cfm");
+	setTitle("Memory Scopes");
 
 	function prettyNum(n=0, large=true){
 		if (arguments.n == 0)

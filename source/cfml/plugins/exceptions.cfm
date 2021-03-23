@@ -11,9 +11,8 @@
 		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("_type,message,detail,template,line");
 
-	request.subtitle = "Exceptions";
+	setTitle("Exceptions");
 	var local.r =0;
-	cfinclude(template="toolbar.cfm");
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
@@ -41,6 +40,9 @@
 <cfquery name="local.q" dbtype="query">
 	select  _type, template, message, detail, line, count(*) as executions
 	from    q
+	<cfif len(arguments.req.template)>
+		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
+	</cfif>
 	group by _type, template, message, detail, line
 	order by executions desc
 </cfquery>
@@ -57,7 +59,7 @@
 			<td>#local.q._type#</td>
 			<td>#local.q.message#</td>
 			<td>#local.q.detail#</td>
-			<td>#local.q.template#</td>
+			#renderTemplateLink(arguments.req, local.q.template)#
 			<td>#local.q.line#</td>
 			<td align="right">#NumberFormat(local.q.executions)#</td>
 		</tr>
@@ -69,22 +71,22 @@
 </cfsavecontent>
 <cfsavecontent variable="local.totals">
 	<tr class="log-totals">
-		<td colspan="5" align="right">Totals</td>
 		<cfoutput>
+			<td colspan="#hasTemplates()+4#" align="right">Totals</td>
 			<td align="right">#numberFormat(local._total_executions)#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
-<cfoutput>
-	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-</cfoutput>
+
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
 	<th data-type="text">Type</th>
 	<th data-type="text">Message</th>
 	<th data-type="text">Detail</th>
-	<th data-type="text">Template</th>
+	<cfoutput>
+		#renderTemplateHead()#
+	</cfoutput>
 	<th>Line</th>
 	<th>Count</th>
 </tr>
@@ -100,7 +102,6 @@
 	</cfif>
 	<tr>
 		<td colspan="9" align="center">
-			<br>
 		<cfif local.debugLogs.data.len() eq 0>
 			No debug logs found? Is debugging enabled?
 		<cfelseif local.q.recordcount eq 0>
@@ -121,5 +122,3 @@
 	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>
-
-

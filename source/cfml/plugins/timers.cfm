@@ -10,10 +10,8 @@
 	if (not structKeyExists(local.debugLogs, "data"))
 		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("label,time,executions,template");
-	
-	request.subtitle = "Timers";
+	setTitle("Timers");
 	var local.r =0;
-	cfinclude(template="toolbar.cfm");
 
 	function prettyTime(n){
 		if (arguments.n == 0)
@@ -54,6 +52,9 @@
 <cfquery name="local.q" dbtype="query">
 	select  label, sum(time) as totalTime, count(*) as executions, template
 	from    q
+	<cfif len(arguments.req.template)>
+		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
+	</cfif>
 	group by label, template
 	order by totalTime desc
 </cfquery>
@@ -69,7 +70,7 @@
 	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
 		<tr>
 			<td>#local.q.label#</td>
-			<td>#local.q.template#</td>
+			#renderTemplateLink(arguments.req, local.q.template)#
 			<td align="right">#prettyTime(local.q.totalTime*1000*1000)#</td>
 			<td align="right">#NumberFormat(local.q.executions)#</td>
 		</tr>
@@ -82,22 +83,20 @@
 </cfsavecontent>
 <cfsavecontent variable="local.totals">
 	<tr class="log-totals">
-		<td colspan="2" align="right">Totals</td>
+		<td colspan="#hasTemplates()+1#" align="right">Totals</td>
 		<cfoutput>
 			<td align="right">#prettyTime(local._total_time*1000*1000)#</td>
 			<td align="right">#prettyNum(local._total_executions)#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
-<cfoutput>
-	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-	<p>Showing data from <a href="https://docs.lucee.org/reference/tags/timer.html">&lt;CFTIMER&gt;</a></p>
-</cfoutput>
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
 	<th data-type="text">Label</th>
-	<th data-type="text">Template</th>
+	<cfoutput>
+		#renderTemplateHead()#
+	</cfoutput>
 	<th>Total time</th>
 	<th>Count</th>
 </tr>
@@ -113,7 +112,6 @@
 	</cfif>
 	<tr>
 		<td colspan="9" align="center">
-			<br>
 		<cfif local.debugLogs.data.len() eq 0>
 			No debug logs found? Is debugging enabled?
 		<cfelseif local.q.recordcount eq 0>
@@ -134,4 +132,3 @@
 	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>
-

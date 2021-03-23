@@ -6,8 +6,7 @@
 		type="#request.adminType#"
 		password="#session["password"&request.adminType]#"
 		returnVariable="local.debugLogs.data";
-	request.subtitle = "Java Threads";
-	cfinclude(template="toolbar.cfm");
+	setTitle("Java Threads");
 </cfscript>
 <cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
@@ -63,7 +62,7 @@
 
 <b>Summary:</b>
 <cfoutput query="q_summary">
-	#q_summary.threadState# (#q_summary.threads#) #DecimalFormat(q_summary.cpuTotal)#s,
+	#q_summary.threadState# (#q_summary.threads#) #NumberFormat(q_summary.cpuTotal)#s,
 </cfoutput>
 <br>
 <br>

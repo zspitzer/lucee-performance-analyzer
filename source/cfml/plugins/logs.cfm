@@ -25,9 +25,8 @@
 	if (not structKeyExists(local.debugLogs, "data"))
 		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("name,time,sql,src,line,count,datasource,usage,cacheType");
-	request.subtitle = "Debugging Logs";
+	setTitle("Debugging Logs");
 	var local.r =0;
-	cfinclude(template="toolbar.cfm");
 	function prettyTime(n){
 		if (arguments.n == 0)
 			return "";
@@ -175,7 +174,7 @@
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
 	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(),"purge")>
-		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs" 
+		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs"
 			onclick='document.location="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&doPurge=true"'>
 	</cfif>
 </cfoutput>

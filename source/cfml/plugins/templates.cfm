@@ -1,5 +1,5 @@
 <cfset local.debugLogs = {}>
-<cfparam name="arguments.req.maxrows" default ="1000">
+<cfparam name="arguments.req.maxrows" default ="100">
 <cfparam name="arguments.req.template" default ="">
 
 <cfadmin action="getLoggedDebugData"
@@ -11,9 +11,8 @@
 	if (not structKeyExists(local.debugLogs, "data"))
 		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew('id,count,min,max,avg,app,load,query,total,src');
-	request.subtitle = "Slowest Templates";
+	setTitle("Slowest Templates");
 	var local.r =0;
-	cfinclude(template="toolbar.cfm");
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
@@ -44,7 +43,7 @@
 <cfscript>
 	loop query="q"{
 		local.tmp = ListToArray(local.q.src,"$");
-		if (arrayLen(local.tmp) eq 2){			
+		if (arrayLen(local.tmp) eq 2){
 			QuerySetCell(q, "_function", local.tmp[2], q.currentrow);
 		}
 		QuerySetCell(q, "template", local.tmp[1], q.currentrow)
@@ -59,26 +58,19 @@
 	from	q
 	<cfif len(arguments.req.template)>
 		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
-	</cfif>	
+	</cfif>
 	group by template, _function
 	order by totalTime desc
 </cfquery>
 <Cfset local.src_rows = local.q.recordcount>
 
-<cfoutput>
-	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-
-	<cfif len(arguments.req.template)>
-		<p><b>Filtering by Template:</b>  #encodeForHtml(arguments.req.template)# 
-			&nbsp; <a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#" class="toolbar-filter">Remove Filter</a>
-		</p>
-	</cfif>
-</cfoutput>
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th data-type="text">Template</th>
-	<th data-type="text">Function</th>	
+	<cfoutput>
+		#renderTemplateHead()#
+	</cfoutput>
+	<th data-type="text">Function</th>
 	<th>Total time</th>
 	<th>Count</th>
 	<th>Min</th>
@@ -91,8 +83,7 @@
 <tbody>
 <cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
 	<tr>
-		<td><a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&template=#urlEncodedFormat(local.q.template)#" 
-			title="show only problems from this template" class="toolbar-filter">#local.q.template#</a></td>
+		#renderTemplateLink(arguments.req, local.q.template)#
 		<td>#local.q._function#<cfif len(local.q._function)>()</cfif></td>
 		<td align="right">#NumberFormat(local.q.totalTime/(1000*1000))#</td>
 		<td align="right">#NumberFormat(local.q.totalCount)#</td>
@@ -125,7 +116,6 @@
 </tfoot>
 </table>
 <cfoutput>
-	#variables.renderUtils.includeLang()#	
+	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>
-

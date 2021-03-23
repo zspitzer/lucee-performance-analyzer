@@ -10,9 +10,8 @@
 	if (not structKeyExists(local.debugLogs, "data"))
 		local.debugLogs.data = []; // getLoggedDebugData may return null
 	var q = QueryNew("name,time,sql,src,line,	count,datasource,usage,cacheType");
-	request.subtitle = "Slowest Queries";
+	setTitle("Slowest Queries");
 	var local.r =0;
-	cfinclude(template="toolbar.cfm");
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
@@ -33,26 +32,28 @@
 </cfloop>
 <!--- Qoq doesn't like count --->
 <cfquery name="local.q" dbtype="query">
-	select  name,time,sql,src,line,	count as total,datasource,cacheType
+	select  name,time,sql,src as template,line,	count as total,datasource,cacheType
 	from    q
 </cfquery>
 
 <cfquery name="local.q" dbtype="query">
 	select  name, sum(time) as totalTime, min(time) as minTime, max(time) as maxTime, avg(time) as avgTime,
-			src,line,	sum(total) as total ,datasource,cacheType, count(*) as executions
+			template,line,	sum(total) as total ,datasource,cacheType, count(*) as executions
 	from    q
-	group by name,src,line,datasource,cacheType
+	<cfif len(arguments.req.template)>
+		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
+	</cfif>
+	group by name,template,line,datasource,cacheType
 	order by totalTime desc
 </cfquery>
 <Cfset local.src_rows = local.q.recordcount>
 
-<cfoutput>
-	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-</cfoutput>
 <table class="maintbl checkboxtbl sort-table">
 <thead>
 <tr>
-	<th data-type="text">Template</th>
+	<cfoutput>
+		#renderTemplateHead()#
+	</cfoutput>
 	<th>Line</th>
 	<th data-type="text">Name</th>
 	<th data-type="text">Datasource</th>
@@ -66,7 +67,7 @@
 <tbody>
 <cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
 	<tr>
-		<td>#local.q.src#</td>
+		#renderTemplateLink(arguments.req, local.q.template)#
 		<td>#NumberFormat(local.q.line)#</td>
 		<td>#local.q.name#</td>
 		<td>#local.q.datasource#</td>
@@ -81,7 +82,6 @@
 <tfoot>
 	<tr>
 		<td colspan="9" align="center">
-			<br>
 		<cfif local.debugLogs.data.len() eq 0>
 			No query logs found? Is debugging enabled?
 		<cfelseif local.q.recordcount eq 0>
@@ -99,7 +99,6 @@
 </tfoot>
 </table>
 <cfoutput>
-	#variables.renderUtils.includeLang()#	
+	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript("perf")#
 </cfoutput>
-
