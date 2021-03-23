@@ -10,7 +10,7 @@
 <cfscript>
 	if (not structKeyExists(local.debugLogs, "data"))
 		local.debugLogs.data = []; // getLoggedDebugData may return null
-	var q = QueryNew('empty');
+	var q = QueryNew('id,count,min,max,avg,app,load,query,total,src');
 	request.subtitle = "Slowest Templates";
 	var local.r =0;
 	cfinclude(template="toolbar.cfm");
