@@ -10,5 +10,5 @@
     },
     "files.trimTrailingWhitespace": true,
     "editor.detectIndentation": false,
-    "editor.insertSpaces": false
+	"editor.insertSpaces": false
 }

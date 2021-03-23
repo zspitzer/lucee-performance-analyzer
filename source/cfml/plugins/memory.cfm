@@ -25,10 +25,10 @@
 	}
 
 	local.rows = 1;
-	local.app_size = sizeOf(serverScope);
-	local.app_keys = structCount(serverScope);
-	local.session_size  = 0;
-	local.session_count  = 0;
+	local.total_app_size = sizeOf(serverScope);
+	local.total_app_keys = structCount(serverScope);
+	local.total_session_size  = 0;
+	local.total_session_count  = 0;
 </cfscript>
 
 <cfadmin action="getLoggedDebugData"
@@ -58,21 +58,23 @@
 			</cfscript>
 			<cfloop collection="#apps#" item="local.app">
 				<cfscript>
-					local.app_size += sizeOf(apps[app]);
-					local.app_keys += structCount(apps[app]);
+					local.app_size = sizeOf(duplicate(apps[app]));
+					local.total_app_size += local.app_size;
+					local.total_app_keys += structCount(apps[app]);
 				</cfscript>
 				<tr>
 					<td>#config.getRootDirectory()#</td>
 					<td>#app#</td>
-					<td align="right">#prettyNum(sizeOf(apps[app]))#</td>
+					<td align="right">#prettyNum(local.app_size)#</td>
 					<td align="right">#prettyNum(structCount(apps[app]), false)#</td>
 					<cfif structKeyExists(sessions, app)>
 						<cfscript>
-							local.session_count += structCount(sessions[app]);
-							local.session_size += sizeOf(sessions[app]);
+							local.session_size = sizeOf(duplicate(local.sessions[app]));
+							local.total_session_size += local.session_size;
+							local.total_session_count += structCount(sessions[app]);
 						</cfscript>
 						<td align="right">#prettyNum(structCount(sessions[app]), false)#</td>
-						<td align="right">#prettyNum(sizeOf(sessions[app]))#</td>
+						<td align="right">#prettyNum(local.session_size)#</td>
 					<cfelse>
 						<td></td>
 						<td></td>
@@ -86,10 +88,10 @@
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
-			<td align="right">#prettyNum(local.app_size)#</td>
-			<td align="right">#prettyNum(local.app_keys, false)#</td>
-			<td align="right">#prettyNum(local.session_count, false)#</td>
-			<td align="right">#prettyNum(local.session_size)#</td>
+			<td align="right">#prettyNum(local.total_app_size)#</td>
+			<td align="right">#prettyNum(local.total_app_keys, false)#</td>
+			<td align="right">#prettyNum(local.total_session_count, false)#</td>
+			<td align="right">#prettyNum(local.total_session_size)#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>

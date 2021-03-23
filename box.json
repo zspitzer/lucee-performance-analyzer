@@ -1,7 +1,7 @@
 {
     "name":"Lucee Performance Analyzer",
     "author":"Zac Spitzer",
-    "version":"1.0.2.4",
+    "version":"1.0.2.5",
     "bugs":"https://github.com/zspitzer/lucee-performance-analyzer/issues",
     "thumbnail": "https://raw.githubusercontent.com/zspitzer/lucee-performance-analyzer/master/build/images/logo.png",
     "changelog":"",
@@ -21,13 +21,13 @@
             "URL":""
         }
     ],
-    "location":"ForgeboxStorage",    
+    "location":"ForgeboxStorage",
     "private":false,
     "projectURL":"",
     "repository":{
         "type":"git",
         "URL":"https://github.com/zspitzer/lucee-performance-analyzer"
-    },    
+    },
     "scripts":{},
     "shortDescription":"A Lucee Admin plugin to analyze debug logs for performance problems, via aggregate reports from all the debug logs available",
     "slug":"A345C8CB-04CC-4D2B-93D50471D5105D83",
@@ -54,7 +54,7 @@
     "lucee-extension-releasetype": "all",
     "lucee-extension-mincoreversion": "5.2.8.50",
     "lucee-extension-category": "performance",
-    
+
     "engines" : [
         { "type" : "lucee", "version" : ">=5.2.8" }
     ]
