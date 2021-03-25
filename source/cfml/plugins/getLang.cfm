@@ -5,6 +5,6 @@
 	};
 	setting showdebugoutput="false";
 	content type="text/javascript" reset="yes";
-	echo ('var pluginLanguage = #serializeJson(pluginLanguage)#;');
+	echo ('var pluginLanguage = #serializeJson( pluginLanguage )#;');
 	abort;
 </cfscript>

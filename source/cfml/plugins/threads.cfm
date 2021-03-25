@@ -6,7 +6,7 @@
 		type="#request.adminType#"
 		password="#session["password"&request.adminType]#"
 		returnVariable="local.debugLogs.data";
-	setTitle("Java Threads");
+	setTitle( "Java Threads" );
 </cfscript>
 <cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
@@ -22,31 +22,31 @@
 
 	//dump(allThreads);
 
-	local.Thread=createObject("java","java.lang.Thread");
-	local.it=Thread.getAllStackTraces().keySet().iterator();
+	local.Thread = createObject( "java", "java.lang.Thread" );
+	local.it = Thread.getAllStackTraces().keySet().iterator();
 	// loop threads
 
-	local.q_threads = queryNew("name,threadState,stack,cpuTime","varchar,varchar,varchar,numeric");
+	local.q_threads = queryNew( "name,threadState,stack,cpuTime","varchar,varchar,varchar,numeric" );
 
 	loop collection=it item="local.t" {
 		//dump(t); abort;
-		local.st=t.getStackTrace();
-		local.str="";
+		local.st = t.getStackTrace();
+		local.str = "";
 		// loop stacktraces
 		loop array=st item="local.ste" {
-			str&=ste;
-			str&="<br>";
+			str &= ste;
+			str &= "<br>";
 		}
-		local.servlet = find("lucee.loader.servlet.CFMLServlet.service", str);
-		if (local.servlet gt 1)
-			str = mid(str,1, local.servlet-1) & "...";
+		local.servlet = find( "lucee.loader.servlet.CFMLServlet.service", str );
+		if ( local.servlet gt 1 )
+			str = mid( str , 1, local.servlet-1 ) & "...";
 
 		local.r = queryAddRow(q_threads);
 		//if(!find("PageContextImpl",str)) continue;
-		QuerySetCell(q_threads, "name", t.name, r);
-		QuerySetCell(q_threads, "threadState", t.getState().toString(), r);
-		QuerySetCell(q_threads, "stack",trim(str), r);
-		QuerySetCell(q_threads, "cpuTime", threadMXBean.getThreadCpuTime(t.getId())/1000/1000, r);
+		QuerySetCell( q_threads, "name", t.name, r  );
+		QuerySetCell( q_threads, "threadState", t.getState().toString(), r );
+		QuerySetCell( q_threads, "stack",trim(str), r );
+		QuerySetCell( q_threads, "cpuTime", threadMXBean.getThreadCpuTime(t.getId())/1000/1000, r );
 	}
 
 	q_threads = q_threads.sort("cputime","desc");
@@ -79,7 +79,7 @@
 <tbody>
 
 	<cfoutput query="q_threads">
-		<tr class="#altRow(local.q.currentRow)#">
+		<tr class="#altRow(local.q_threads.currentRow)#">
 			<td>#q_threads.name#</td>
 			<td>#q_threads.threadState#</td>
 			<td><pre>#q_threads.stack#</pre></td>

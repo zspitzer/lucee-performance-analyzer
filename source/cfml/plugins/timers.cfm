@@ -1,5 +1,5 @@
 <cfset local.debugLogs = {}>
-<cfparam name="arguments.req.maxrows" default ="1000">
+<cfparam name="arguments.req.maxrows" default="1000">
 
 <cfadmin action="getLoggedDebugData"
 	type="#request.adminType#"
@@ -7,43 +7,43 @@
 	returnVariable="local.debugLogs.data">
 
 <cfscript>
-	if (not structKeyExists(local.debugLogs, "data"))
+	if (!StructKeyExists( local.debugLogs, "data" ) )
 		local.debugLogs.data = []; // getLoggedDebugData may return null
-	var q = QueryNew("label,time,executions,template");
-	setTitle("Timers");
-	var local.r =0;
+	var q = QueryNew( "label,time,executions,template" );
+	setTitle( "Timers" );
+	var local.r = 0;
 
-	function prettyTime(n){
-		if (arguments.n == 0)
+	function prettyTime( n ){
+		if ( arguments.n == 0 )
 			return "";
-		 var s = arguments.n/(1000*1000);
-		 if (int(s)  eq 0)
+		 var s = arguments.n / ( 1000 * 1000 );
+		 if ( int( s ) eq 0 )
 		 	return "";
-		return NumberFormat(s);
+		return NumberFormat( s );
 	}
 
-	function prettyNum(n){
-		if (arguments.n == 0)
+	function prettyNum( n ){
+		if ( arguments.n == 0 )
 			return "";
 
-		 if (int(arguments.n)  eq 0)
+		 if ( int( arguments.n )  eq 0 )
 		 	return "";
-		return NumberFormat(arguments.n);
+		return NumberFormat( arguments.n );
 	}
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(arguments.req, "since")){
-			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+		if ( StructKeyExists( arguments.req, "since" ) ){
+			if ( DateCompare( log.starttime, arguments.req.since ) neq 1)
 				continue;
 		}
 		// if timers isn't enabled in debug settings, there won't be data
-		if (structKeyExists(local.log, "timers")){
-			local.timers=local.log.timers;
+		if ( structKeyExists( local.log, "timers") ){
+			local.timers = local.log.timers;
 			loop query="#local.timers#" {
-				queryAddRow(q, queryRowData(local.timers, local.timers.currentrow));
+				queryAddRow( q, queryRowData( local.timers, local.timers.currentrow) );
 			}
 		}
 	</cfscript>
@@ -68,11 +68,11 @@
 <cfsavecontent variable="local.body">
 	<tbody>
 	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-		<tr class="#altRow(local.q.currentRow)#">
+		<tr class="#altRow( local.q.currentRow )#">
 			<td>#local.q.label#</td>
-			#renderTemplateLink(arguments.req, local.q.template)#
-			<td align="right">#prettyTime(local.q.totalTime*1000*1000)#</td>
-			<td align="right">#NumberFormat(local.q.executions)#</td>
+			#renderTemplateLink( arguments.req, local.q.template )#
+			<td align="right">#prettyTime (local.q.totalTime * 1000 * 1000 )#</td>
+			<td align="right">#NumberFormat( local.q.executions )#</td>
 		</tr>
 		<cfscript>
 			local._total_time += local.q.totalTime;
@@ -85,8 +85,8 @@
 	<tr class="log-totals">
 		<td colspan="#hasTemplates()+1#" align="right">Totals</td>
 		<cfoutput>
-			<td align="right">#prettyTime(local._total_time*1000*1000)#</td>
-			<td align="right">#prettyNum(local._total_executions)#</td>
+			<td align="right">#prettyTime( local._total_time * 1000 * 1000 )#</td>
+			<td align="right">#prettyNum( local._total_executions )#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
@@ -130,5 +130,5 @@
 </table>
 <cfoutput>
 	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeJavascript( "perf" )#
 </cfoutput>

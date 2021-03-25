@@ -22,33 +22,34 @@
 	returnVariable="local.debugLogs.data">
 
 <cfscript>
-	if (not structKeyExists(local.debugLogs, "data"))
+	if (!StructKeyExists( local.debugLogs, "data" ) )
 		local.debugLogs.data = []; // getLoggedDebugData may return null
-	var q = QueryNew("name,time,sql,src,line,count,datasource,usage,cacheType");
-	setTitle("Debugging Logs");
-	var local.r =0;
-	function prettyTime(n){
-		if (arguments.n == 0)
+	var q = QueryNew( "name,time,sql,src,line,count,datasource,usage,cacheType" );
+	setTitle( "Debugging Logs" );
+	var local.r = 0;
+
+	function prettyTime( n ){
+		if ( arguments.n == 0 )
 			return "";
-		 var s = arguments.n/(1000*1000);
-		 if (int(s)  eq 0)
+		 var s = arguments.n / ( 1000 * 1000 );
+		 if ( Int(s) eq 0 )
 		 	return "";
-		return NumberFormat(s);
+		return NumberFormat( s );
 	}
 
-	function prettyNum(n){
-		if (arguments.n == 0)
+	function prettyNum( n ){
+		if ( arguments.n == 0 )
 			return "";
 
-		 if (int(arguments.n)  eq 0)
+		 if ( Int(arguments.n)  eq 0 )
 		 	return "";
-		return NumberFormat(arguments.n);
+		return NumberFormat( arguments.n );
 	}
-	local.midnight = createDate(year(now()), month(now()), day(now()) ); // hide todays date
+	local.midnight = CreateDate( Year( Now() ), Month( Now() ), Day( Now() ) ); // hide todays date
 
-	function hasJavaMethod(obj,name) {
+	function hasJavaMethod( obj, name ) {
 		loop array=arguments.obj.getClass().getMethods() item="local.m" {
-			if(m.getName()==arguments.name) return true;
+			if( m.getName() == arguments.name ) return true;
 		}
 		return false;
 	}
@@ -57,8 +58,8 @@
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(arguments.req, "since")){
-			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+		if ( StructKeyExists( arguments.req, "since" ) ){
+			if ( DateCompare( log.starttime, arguments.req.since ) neq 1)
 				continue;
 		}
 	</cfscript>
@@ -81,15 +82,15 @@
 	<cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 		<cfscript>
 			local.log = local.debugLogs.data[local.i];
-			if (StructKeyExists(arguments.req, "since")){
-				if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+			if ( StructKeyExists(arguments.req, "since") ){
+				if ( DateCompare( log.starttime, arguments.req.since ) neq 1)
 					continue;
 			}
-			if (local.i gt arguments.req.maxrows)
+			if ( local.i gt arguments.req.maxrows )
 				break;
 			local.rows++;
 			//dump(local.log);
-			if (not structKeyExists(local.log, "scope"))
+			if ( !StructKeyExists(local.log, "scope") )
 				local.cgi = local.log.cgi;
 			else
 				local.cgi  = local.log.scope.cgi; // 5.3++
@@ -99,9 +100,9 @@
 				path = "POST #PATH#";
 
 			var _scope = "0";
-			if (structKeyExists(local.log, "implicitAccess") and local.log.implicitAccess.recordcount){
+			if ( StructKeyExists( local.log, "implicitAccess" ) and local.log.implicitAccess.recordcount ){
 				_scope = QueryReduce( local.log.implicitAccess,
-					function(problems=0, row, rowNumber, recordset ){
+					function( problems=0, row, rowNumber, recordset ){
 					return arguments.problems + arguments.row.count;
 				});
 			}
@@ -109,7 +110,7 @@
 			var _query=0;
 			var _app=0;
 			var _load=0
-			if (structKeyExists(local.log, "pages")){
+			if ( StructKeyExists( local.log, "pages" ) ){
 				loop query="local.log.pages"{
 					_total += local.log.pages.total;
 					_query+= local.log.pages.query;
@@ -117,7 +118,7 @@
 					_load += local.log.pages.load;
 				}
 			}
-			local.total_size +=  + sizeOf(local.log)/1000;
+			local.total_size +=  + SizeOf( local.log ) / 1000;
 			local.total_app += _app;
 			local.total_query += _query;
 			local.total_total += _total;
@@ -127,30 +128,30 @@
 		<cfoutput>
 			<cfif arguments.req.consoleDump>
 				<script>
-					console.log("#local.log.scope.cgi.request_url#", #serializeJson(local.log.scope.cgi)#);
+					console.log( "#local.log.scope.cgi.request_url#", #SerializeJson( local.log.scope.cgi )# );
 				</script>
 			</cfif>
-		<tr class="#altRow(local.i)#">
+		<tr class="#altRow( local.i )#">
 			<td><a href="?action=debugging.logs&action2=detail&id=#hash(local.log.id&":"&local.log.startTime)#">#path#</td>
-			<td data-value=#DateDiff('s', "2000-1-1", local.log.starttime)#>
-			<cfif DateCompare(local.log.starttime, local.midnight) eq -1>
-				#DateTimeFormat(local.log.starttime)#
+			<td data-value=#DateDiff( 's', "2000-1-1", local.log.starttime )#>
+			<cfif DateCompare( local.log.starttime, local.midnight ) eq -1>
+				#DateTimeFormat( local.log.starttime )#
 			<cfelse>
-				#TimeFormat(local.log.starttime)#
+				#TimeFormat( local.log.starttime )#
 			</cfif>
 			</td>
-			<td align="right">#prettyTime(_total)# </td>
-			<td align="right">#prettyTime(_app)#</td>
-			<td align="right">#prettyTime(_query)#</td>
-			<td align="right">#prettyTime(_load)#</td>
-			<td align="right">#prettyNum(_scope)#</td>
-			<cfif structKeyExists(local.log, "exceptions")>
-				<cfset local.total_exp += arrayLen(local.log.exceptions)>
-				<td align="right">#prettyNum(arrayLen(local.log.exceptions))#</td>
+			<td align="right">#prettyTime( _total )# </td>
+			<td align="right">#prettyTime( _app )#</td>
+			<td align="right">#prettyTime( _query )#</td>
+			<td align="right">#prettyTime( _load )#</td>
+			<td align="right">#prettyNum( _scope )#</td>
+			<cfif StructKeyExists( local.log, "exceptions" )>
+				<cfset local.total_exp += ArrayLen( local.log.exceptions )>
+				<td align="right">#prettyNum( ArrayLen( local.log.exceptions ) )#</td>
 			<cfelse>
 				<td></td>
 			</cfif>
-			<td align="right">#prettyNum(sizeOf(local.log)/1000)#</td>
+			<td align="right">#prettyNum( SizeOf( local.log ) / 1000 )#</td>
 		</tr>
 		</cfoutput>
 	</cfloop>
@@ -160,26 +161,24 @@
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
-			<td align="right">#prettyTime(local.total_total)#</td>
-			<td align="right">#prettyTime(local.total_app)#</td>
-			<td align="right">#prettyTime(local.total_query)#</td>
-			<td align="right">#prettyTime(local.total_load)#</td>
-			<td align="right">#prettyNum(local.total_scope)#</td>
-			<td align="right">#prettyNum(local.total_exp)#</td>
-			<td align="right">#prettyNum(local.total_size)#</td>
+			<td align="right">#prettyTime( local.total_total )#</td>
+			<td align="right">#prettyTime( local.total_app )#</td>
+			<td align="right">#prettyTime( local.total_query )#</td>
+			<td align="right">#prettyTime( local.total_load )#</td>
+			<td align="right">#prettyNum( local.total_scope )#</td>
+			<td align="right">#prettyNum( local.total_exp )#</td>
+			<td align="right">#prettyNum( local.total_size )#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
 
 <cfoutput>
 	<p>This report is based on all the debugging logs currently in memory (#local.debugLogs.data.len()#), click column headers to sort</p>
-	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(),"purge")>
+	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(), "purge" )>
 		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs"
 			onclick='document.location="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&doPurge=true"'>
 	</cfif>
 </cfoutput>
-
-
 
 <table class="maintbl checkboxtbl sort-table">
 <thead>
@@ -222,5 +221,5 @@
 </table>
 <cfoutput>
     #variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeJavascript( "perf" )#
 </cfoutput>

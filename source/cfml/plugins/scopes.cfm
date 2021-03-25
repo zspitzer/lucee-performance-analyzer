@@ -7,25 +7,25 @@
 	returnVariable="local.debugLogs.data">
 
 <cfscript>
-	if (not structKeyExists(local.debugLogs, "data"))
+	if ( !StructKeyExists(local.debugLogs, "data" ) )
 		local.debugLogs.data = []; // getLoggedDebugData may return null
-	var q = QueryNew("template,line,scope,count,name");
-	setTitle("Variable Scoping Problems");
-	var local.r =0;
+	var q = QueryNew( "template,line,scope,count,name" );
+	setTitle( "Variable Scoping Problems");
+	var local.r = 0;
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(arguments.req, "since")){
-			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+		if ( StructKeyExists( arguments.req, "since" ) ) {
+			if ( DateCompare( log.starttime, arguments.req.since ) neq 1)
 				continue;
 		}
 		// if implicitAccess isn't enabled in debug settings, there won't be data
-		if (structKeyExists(local.log, "implicitAccess")){
-			local.implicitAccess=local.log.implicitAccess;
+		if (structKeyExists( local.log, "implicitAccess" )){
+			local.implicitAccess = local.log.implicitAccess;
 			loop query="#local.implicitAccess#" {
-				queryAddRow(q, queryRowData(local.implicitAccess, local.implicitAccess.currentrow));
+				QueryAddRow( q, QueryRowData( local.implicitAccess, local.implicitAccess.currentrow ) );
 			}
 		}
 	</cfscript>
@@ -61,12 +61,12 @@
 </thead>
 <tbody>
 <cfoutput query="local.q" maxrows="#arguments.req.maxrows#">
-	<tr class="#altRow(local.q.currentRow)#">
-		#renderTemplateLink(arguments.req, local.q.template)#
-		<td>#NumberFormat(local.q.line)#</td>
+	<tr class="#altRow( local.q.currentRow )#">
+		#renderTemplateLink( arguments.req, local.q.template )#
+		<td>#NumberFormat( local.q.line )#</td>
 		<td>#local.q.name#</td>
 		<td>#local.q.resolvedScope#</td>
-		<td align="right">#NumberFormat(local.q.total)#</td>
+		<td align="right">#NumberFormat( local.q.total )#</td>
 	</tr>
 </cfoutput>
 </tbody>
@@ -81,7 +81,7 @@
 		</cfif>
 		</td>
 	</tr>
-	<cfif src_rows gt arguments.req.maxrows and len(arguments.req.template) eq 0>
+	<cfif src_rows gt arguments.req.maxrows and len( arguments.req.template ) eq 0>
 		<cfoutput>
 		<tr>
 			<td colspan="9" align="center"><br>Showing the top #arguments.req.maxrows# scope problems by count (from #src_rows#)
@@ -92,5 +92,5 @@
 </table>
 <cfoutput>
 	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeJavascript( "perf" )#
 </cfoutput>

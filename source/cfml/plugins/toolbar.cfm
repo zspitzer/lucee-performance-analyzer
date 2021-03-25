@@ -8,32 +8,32 @@
 	local.urlExtra = "";
 	if ( StructKeyExists(arguments.req, "since") and arguments.req.since and isDate(arguments.req.since))
 		urlExtra = "since=#arguments.req.since#";
-	if (len(arguments.req.template))
-		urlExtra = urlExtra & "template=" & urlEncodedFormat(arguments.req.template);
+	if ( Len( arguments.req.template ) )
+		urlExtra = urlExtra & "template=" & urlEncodedFormat( arguments.req.template );
 
 	local.cfquery = ""; // hide from scopes
 	request.title = "Performance Analyzer";
 	local.path = "";
 	variables.exactTemplatePath = len( arguments.req.template ) eq 0 ? false:  FileExists( arguments.req.template );
-	if (variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
+	if ( variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
 		variables.exactTemplatePath = false;
 
 	function renderTemplateLink ( req, linkTemplate ){
 		var temp = arguments.linkTemplate;
 		if (len( arguments.req.template ) gt 0 and find( arguments.req.template, arguments.linkTemplate, 1 ) eq 1)
-			temp = mid( arguments.linkTemplate, len(arguments.req.template)+2 );
-		if (!variables.exactTemplatePath ){
+			temp = mid( arguments.linkTemplate, len( arguments.req.template ) + 2 );
+		if ( !variables.exactTemplatePath ){
 			echo("<td>");
 			echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#'
 				& '&template=#urlEncodedFormat(arguments.linkTemplate)#"'
-				& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat(temp)#</a>')
+				& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>')
 			echo("</td>");
 		}
 	}
 
 	function renderTemplateHead(){
-		if (!variables.exactTemplatePath)
-			echo('<th data-type="text">Template</th>');
+		if ( !variables.exactTemplatePath )
+			echo( '<th data-type="text">Template</th>' );
 	};
 
 	function hasTemplates(){
@@ -41,9 +41,9 @@
 	};
 
 	function setTitle(title){
-		var t = listFirst(ListLast(getCurrentTemplatePath(),"\/"), ".");
-		if (variables.req.pluginAction eq t)
-			echo("<h3>#arguments.title#</h3>");
+		var t = ListFirst( ListLast( GetCurrentTemplatePath(), "\/" ), "." );
+		if ( variables.req.pluginAction eq t )
+			echo( "<h3>#arguments.title#</h3>" );
 		request.subtitle = arguments.title;
 	}
 
@@ -54,7 +54,7 @@
 	}
 
 </cfscript>
-<cfif len(arguments.req.template)>
+<cfif len( arguments.req.template )>
 	<cfscript>
 		local.delim = "";
 		local.offset=0;
@@ -104,17 +104,17 @@
 </div>
 <hr>
 <cfoutput>
-<cfif StructKeyExists(arguments.req, "since")>
-	<p>Filter: Only reporting logs since #dateTimeFormat(arguments.req.since)#
+<cfif StructKeyExists( arguments.req, "since" )>
+	<p>Filter: Only reporting logs since #DateTimeFormat( arguments.req.since )#
 		<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#" class="toolbar-filter">
 		 (remove filter)
 		</a>
 	</p>
 </cfif>
-<cfif lastLogDate neq "false" or StructKeyExists(arguments.req, "since")>
+<cfif lastLogDate neq "false" or StructKeyExists( arguments.req, "since" )>
 	<p>Refresh with only new logs
 		<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&since=#DateTimeFormat(lastlogDate,"yyyy-mm-dd HH:MM:SS")#" class="toolbar-filter">
-			#DateTimeFormat(lastLogDate)#
+			#LSDateTimeFormat( lastLogDate )#
 	   </a>
 </p>
 </cfif>

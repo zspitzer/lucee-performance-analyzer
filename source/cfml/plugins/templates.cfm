@@ -17,19 +17,19 @@
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
-		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(arguments.req, "since")){
-			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+		local.log = local.debugLogs.data[ local.i ];
+		if ( StructKeyExists(arguments.req, "since" ) ){
+			if ( dateCompare( log.starttime, arguments.req.since ) neq 1)
 				continue;
 		}
 		// if queries isn't enabled in debug settings, there won't be data
-		if (structKeyExists(local.log, "pages")){
-			if (q.recordcount eq 0){
+		if ( StructKeyExists( local.log, "pages" )){
+			if ( q.recordcount eq 0 ){
 				q = duplicate(local.log.pages); // use existing query
 			} else {
 				local.pages=local.log.pages;
 				loop query="#local.pages#" {
-					queryAddRow(q, queryRowData(local.pages, local.pages.currentrow));
+					queryAddRow( q, queryRowData( local.pages, local.pages.currentrow ) );
 				}
 			}
 		}
@@ -42,11 +42,11 @@
 </cfquery>
 <cfscript>
 	loop query="q"{
-		local.tmp = ListToArray(local.q.src,"$");
-		if (arrayLen(local.tmp) eq 2){
-			QuerySetCell(q, "_function", local.tmp[2], q.currentrow);
+		local.tmp = ListToArray( local.q.src, "$" );
+		if ( ArrayLen( local.tmp ) eq 2 ){
+			QuerySetCell( q, "_function", local.tmp[2], q.currentrow );
 		}
-		QuerySetCell(q, "template", local.tmp[1], q.currentrow)
+		QuerySetCell( q, "template", local.tmp[1], q.currentrow );
 	}
 </cfscript>
 
@@ -55,7 +55,7 @@
 			avg(query) as avgQuery, avg(load) as avgLoad, sum(total) as totalTime, sum(_count) as totalCount,
 			sum(total) as total, count(*) as executions
 	from	q
-	<cfif len(arguments.req.template)>
+	<cfif len( arguments.req.template )>
 		where template like <cfqueryparam value="#arguments.req.template#%" sqltype="varchar">
 	</cfif>
 	group by template, _function
@@ -65,11 +65,11 @@
 <cfscript>
 	local.templates = [=]; // ordered struct
 	if ( len( arguments.req.template ) && ! variables.exactTemplatePath ){
-		local.files = DirectoryList( path=arguments.req.template, recurse=true, listInfo="query", 
-			filter = function(path){
+		local.files = DirectoryList( path=arguments.req.template, recurse=true, listInfo="query",
+			filter = function( path ){
 				local.e = listLast( arguments.path, "\/." );
-				return ( Find("cf",local.e) eq 1 );
-			} 
+				return ( Find( "cf", local.e ) eq 1 );
+			}
 		);
 		//dump(var=local.files, top=10);
 		loop query = local.files {
@@ -79,7 +79,7 @@
 			};
 		}
 		//dump(var=local.templates, top=10);
-	}	
+	}
 </cfscript>
 <Cfset local.src_rows = local.q.recordcount>
 
@@ -102,15 +102,15 @@
 <tbody>
 <cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
 	<tr class="#altRow(local.q.currentRow)#">
-		#renderTemplateLink(arguments.req, local.q.template)#
-		<td>#local.q._function#<cfif len(local.q._function)>()</cfif></td>
-		<td align="right">#NumberFormat(local.q.totalTime/(1000*1000))#</td>
-		<td align="right">#NumberFormat(local.q.totalCount)#</td>
-		<td align="right">#NumberFormat(local.q.minTime/(1000*1000))#</td>
-		<td align="right">#NumberFormat(local.q.maxTime/(1000*1000))#</td>
-		<td align="right">#NumberFormat(local.q.avgTime/(1000*1000))#</td>
-		<!---<td align="right">#NumberFormat(local.q.avgQuery/(1000*1000))#</td>--->
-		<td align="right">#NumberFormat(local.q.executions)#</td>
+		#renderTemplateLink( arguments.req, local.q.template )#
+		<td>#local.q._function#<cfif Len( local.q._function )>()</cfif></td>
+		<td align="right">#NumberFormat( local.q.totalTime / ( 1000 * 1000 ) )#</td>
+		<td align="right">#NumberFormat( local.q.totalCount)#</td>
+		<td align="right">#NumberFormat( local.q.minTime / ( 1000 * 1000 ) )#</td>
+		<td align="right">#NumberFormat( local.q.maxTime / ( 1000 * 1000 ) )#</td>
+		<td align="right">#NumberFormat( local.q.avgTime / ( 1000 * 1000 ) )#</td>
+		<!---<td align="right">#NumberFormat(local.q.avgQuery / ( 1000 * 1000 ) )#</td>--->
+		<td align="right">#NumberFormat( local.q.executions )#</td>
 	</tr>
 </cfoutput>
 </tbody>
@@ -136,9 +136,10 @@
 </table>
 
 <cfscript>
+	// loop again, because cfoutput has a maxrows
 	loop query="local.q" {
 		if ( StructKeyExists( local.templates, local.q.template ) ){
-			local.templates[local.q.template].uses ++;
+			local.templates[ local.q.template ].uses ++;
 		}
 	}
 </cfscript>
@@ -159,10 +160,10 @@
 		<tbody>
 			<cfloop collection="#local.templates#" key="local.t" value="local.c">
 				<tr class=<cfif local.c.uses eq 0>"unused-template"</cfif>>
-					#renderTemplateLink(arguments.req, local.t)#
-					<td align="right">#NumberFormat(local.c.uses)#</td>
-					<td align="right">#NumberFormat(local.c.file.size)#</td>
-					<td class="no-wrap">#LSDateTimeFormat(local.c.file.dateLastModified)#</td>
+					#renderTemplateLink( arguments.req, local.t )#
+					<td align="right">#NumberFormat( local.c.uses )#</td>
+					<td align="right">#NumberFormat( local.c.file.size )#</td>
+					<td class="no-wrap">#LSDateTimeFormat( local.c.file.dateLastModified )#</td>
 				</tr>
 			</cfloop>
 		</tbody>
@@ -171,5 +172,5 @@
 </cfif>
 <cfoutput>
 	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeJavascript( "perf" )#
 </cfoutput>

@@ -24,84 +24,83 @@
  */
 component hint="various rendering related files"{
 
-	public void function init(required struct lang, required string href, required any action) {
-		variables.AssetHrefPath = listFirst(arguments.href,"?");
-		variables.AssetHrefParams = listLast(arguments.href,"?");;
+	public void function init( required struct lang, required string href, required any action ) {
+		variables.AssetHrefPath = ListFirst( arguments.href, "?" );
+		variables.AssetHrefParams = ListLast( arguments.href, "?" );;
 		variables.lang = arguments.lang;
 		variables.action = arguments.action;
-
 	}
 
 	public string function getCSRF(){
 		return CSRFGenerateToken("log-analyzer");
 	}
 
-	private boolean function checkCSRF(required string token){
-		if (not CSRFVerifyToken( arguments.token, "log-analyzer" ))
+	private boolean function checkCSRF( required string token ){
+		if ( !CSRFVerifyToken( arguments.token, "log-analyzer" ) )
 			throw message="access denied";
 		else
 			return true;
 	}
 
-	public void function renderServerTimingHeaders(required array timings){
+	public void function renderServerTimingHeaders( required array timings ){
 		var serverTimingHeaders = [];
-		for (var timing in arguments.timings){
-			arrayAppend(serverTimingHeaders, '#timing.metric#;dur=#timing.data#;desc="#timing.name#"');
+		for ( var timing in arguments.timings ){
+			arrayAppend( serverTimingHeaders, '#timing.metric#;dur=#timing.data#;desc="#timing.name#"' );
 		}
 
 		if (serverTimingHeaders.len() gt 0 and not getPageContext().getHttpServletResponse().isCommitted() ) // avoid cfflush error
-            header name="Server-Timing" value="#ArrayToList(serverTimingHeaders,", ")#";
+            header name="Server-Timing" value="#ArrayToList( serverTimingHeaders, ", " )#";
 	}
 
-	public void function includeCSS(required string template) {
+	public void function includeCSS( required string template ) {
 		htmlhead text='<link rel="stylesheet" href="#variables.AssetHrefPath#?asset=#arguments.template#.css&#variables.AssetHrefParams#">#chr(10)#';
 	}
 
-	public void function includeJavascript(required string template) {
+	public void function includeJavascript( required string template ) {
 		htmlbody text='<script src="#variables.AssetHrefPath#?asset=#arguments.template#.js&#variables.AssetHrefParams#"></script>#chr(10)#';
 	}
 
 	public void function includeLang() {
-		htmlbody text='<script src="#variables.action('getLang')#"></script>#chr(10)#';
+		htmlbody text='<script src="#variables.action( 'getLang' )#"></script>#Chr( 10 )#';
 	}
 
-	public void function warnMissingLang(required struct missingLang) {
-		if (structCount(warnMissingLang) eq 0)
+	public void function warnMissingLang( required struct missingLang ) {
+		if ( structCount( warnMissingLang ) eq 0 )
 			return;
 		var missing = [];
 		for (var k in arguments.missingLang)
-			missing.append("console.warn('missing language string: [#jsstringformat(k)#] from cfml');");
+			missing.append( "console.warn('missing language string: [#JSStringFormat( k )#] from cfml');" );
 
-		writeOutput("<script>#ArrayToList(missing,chr(10))#</script>");
+		writeOutput( "<script>#ArrayToList( missing, Chr( 10 ) )#</script>" );
 	}
 
-	public void function returnAsset(required string asset) {
+	public void function returnAsset( required string asset ) {
 		if (arguments.asset contains "..")
-			throw "invalid asset request #htmleditformat(arguments.asset)#";
-		local.fileType = listLast(arguments.asset, ".");
+			throw "invalid asset request #EncodeForHtml( arguments.asset )#";
+		local.fileType = ListLast( arguments.asset, "." );
 
 		switch (local.fileType){
 			case "js":
-				local.file = getDirectoryFromPath(getCurrentTemplatePath()) & "js/#arguments.asset#";
+				local.file = getDirectoryFromPath( getCurrentTemplatePath() ) & "js/#arguments.asset#";
 				local.mime = "text/javascript";
 				break;
 			case "css":
-				local.file = getDirectoryFromPath(getCurrentTemplatePath()) & "css/#arguments.asset#";
+				local.file = getDirectoryFromPath( getCurrentTemplatePath() ) & "css/#arguments.asset#";
 				local.mime = "text/css";
 				break;
 			default:
 				throw();
 		}
-		if (not fileExists(local.file)){
+		if ( !FileExists( local.file ) ){
 			header statuscode="404";
-			writeOutput("file not found #htmleditformat(local.file)#");
+			writeOutput( "file not found #EncodeForHtml( local.file )#" );
 			abort;
 		}
 		local.fileInfo = FileInfo(local.file);
 
-		if ( structKeyExists(GetHttpRequestData().headers, "If-Modified-Since") ){
-			local.if_modified_since=ParseDateTime(GetHttpRequestData().headers['If-Modified-Since']);
-			if (DateDiff("s", local.fileInfo.dateLastModified, local.if_modified_since) GTE 0){
+		if ( StructKeyExists( GetHttpRequestData().headers, "If-Modified-Since" ) ){
+			local.if_modified_since = ParseDateTime( GetHttpRequestData().headers['If-Modified-Since'] );
+			if ( DateDiff( "s", local.fileInfo.dateLastModified, local.if_modified_since ) GTE 0 ){
 				header statuscode="304" statustext="Not Modified";
 				abort;
 			}
@@ -114,21 +113,21 @@ component hint="various rendering related files"{
 	/**
 	 * creates a text string indicating the timespan between NOW and given datetime
 	 */
-	public function getTextTimeSpan(required date date) output=false {
-		var diffSecs = dateDiff('s', arguments.date, now());
+	public function getTextTimeSpan( required date date ) output=false {
+		var diffSecs = DateDiff( 's', arguments.date, now() );
 		if ( diffSecs < 60 ) {
-			return replace(variables.lang.xSecondsAgo, '%1', diffSecs);
+			return Replace( variables.lang.xSecondsAgo, '%1', diffSecs );
 		} else if ( diffSecs < 3600 ) {
-			return replace(variables.lang.xMinutesAgo, '%1', int(diffSecs/60));
+			return Replace( variables.lang.xMinutesAgo, '%1', int (diffSecs / 60 ) );
 		} else if ( diffSecs < 86400 ) {
-			return replace(variables.lang.xHoursAgo, '%1', int(diffSecs/3600));
+			return Replace( variables.lang.xHoursAgo, '%1', int( diffSecs / 3600 ) );
 		} else {
-			return replace(variables.lang.xDaysAgo, '%1', int(diffSecs/86400));
+			return Replace( variables.lang.xDaysAgo, '%1', int( diffSecs / 86400 ) );
 		}
 	}
 
-	public function cleanHtml( required string content){
-		return ReReplace(arguments.content, "[\r\n]\s*([\r\n]|\Z)", Chr(10), "ALL")
+	public function cleanHtml( required string content ){
+		return ReReplace( arguments.content, "[\r\n]\s*([\r\n]|\Z)", Chr(10), "ALL" )
 	}
 
 }

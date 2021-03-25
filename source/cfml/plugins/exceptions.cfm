@@ -7,29 +7,29 @@
 	returnVariable="local.debugLogs.data">
 
 <cfscript>
-	if (not structKeyExists(local.debugLogs, "data"))
+	if (!StructKeyExists( local.debugLogs, "data" ) )
 		local.debugLogs.data = []; // getLoggedDebugData may return null
-	var q = QueryNew("_type,message,detail,template,line");
+	var q = QueryNew( "_type,message,detail,template,line" );
 
-	setTitle("Exceptions");
-	var local.r =0;
+	setTitle( "Exceptions" );
+	var local.r = 0;
 </cfscript>
 
 <cfloop from="#local.debugLogs.data.len()#" to="1" step=-1 index="local.i">
 	<cfscript>
 		local.log = local.debugLogs.data[local.i];
-		if (StructKeyExists(arguments.req, "since")){
-			if (dateCompare(log.starttime, arguments.req.since ) neq 1)
+		if ( StructKeyExists( arguments.req, "since" ) ){
+			if ( DateCompare( log.starttime, arguments.req.since ) neq 1 )
 				continue;
 		}
 		// if exceptions isn't enabled in debug settings, there won't be data
-		if (structKeyExists(local.log, "exceptions")){
+		if ( StructKeyExists( local.log, "exceptions" ) ){
 			local.exceptions = local.log.exceptions;
 			loop array="#local.exceptions#" item="local.exp"{
-				local.r = queryAddRow(q);
-				QuerySetCell (local.q, "_type", exp.type, r );
-				QuerySetCell (local.q, "message", exp.message, r );
-				QuerySetCell (local.q, "detail", exp.detail, r );
+				local.r = QueryAddRow( q );
+				QuerySetCell( local.q, "_type", exp.type, r );
+				QuerySetCell( local.q, "message", exp.message, r );
+				QuerySetCell( local.q, "detail", exp.detail, r );
 				QuerySetCell( local.q, "line", exp.TagContext[1].line, r );
 				QuerySetCell( local.q, "template", exp.TagContext[1].template, r );
 			}
@@ -59,9 +59,9 @@
 			<td>#local.q._type#</td>
 			<td>#local.q.message#</td>
 			<td>#local.q.detail#</td>
-			#renderTemplateLink(arguments.req, local.q.template)#
+			#renderTemplateLink( arguments.req, local.q.template )#
 			<td>#local.q.line#</td>
-			<td align="right">#NumberFormat(local.q.executions)#</td>
+			<td align="right">#NumberFormat( local.q.executions )#</td>
 		</tr>
 		<cfscript>
 			local._total_executions += local.q.executions;
@@ -73,7 +73,7 @@
 	<tr class="log-totals">
 		<cfoutput>
 			<td colspan="#hasTemplates()+4#" align="right">Totals</td>
-			<td align="right">#numberFormat(local._total_executions)#</td>
+			<td align="right">#numberFormat( local._total_executions )#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
@@ -120,5 +120,5 @@
 </table>
 <cfoutput>
 	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
+	#variables.renderUtils.includeJavascript( "perf" )#
 </cfoutput>
