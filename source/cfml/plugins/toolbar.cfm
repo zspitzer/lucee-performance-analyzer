@@ -47,6 +47,12 @@
 		request.subtitle = arguments.title;
 	}
 
+	function altRow(currentrow){
+		if ( arguments.currentRow mod 2 eq 0 )
+			return "alt-row";
+		return "zzz";
+	}
+
 </cfscript>
 <cfif len(arguments.req.template)>
 	<cfscript>

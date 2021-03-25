@@ -79,7 +79,7 @@
 <tbody>
 
 	<cfoutput query="q_threads">
-		<tr>
+		<tr class="#altRow(local.q.currentRow)#">
 			<td>#q_threads.name#</td>
 			<td>#q_threads.threadState#</td>
 			<td><pre>#q_threads.stack#</pre></td>

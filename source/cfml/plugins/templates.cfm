@@ -48,7 +48,6 @@
 		}
 		QuerySetCell(q, "template", local.tmp[1], q.currentrow)
 	}
-
 </cfscript>
 
 <cfquery name="local.q" dbtype="query">
@@ -62,6 +61,26 @@
 	group by template, _function
 	order by totalTime desc
 </cfquery>
+
+<cfscript>
+	local.templates = [=]; // ordered struct
+	if ( len( arguments.req.template ) && ! variables.exactTemplatePath ){
+		local.files = DirectoryList( path=arguments.req.template, recurse=true, listInfo="query", 
+			filter = function(path){
+				local.e = listLast( arguments.path, "\/." );
+				return ( Find("cf",local.e) eq 1 );
+			} 
+		);
+		//dump(var=local.files, top=10);
+		loop query = local.files {
+			templates[ local.files.directory & server.separator.file & local.files.name ] = {
+				uses: 0 // count usage
+				, file: QueryRowData( local.files, local.files.currentrow )
+			};
+		}
+		//dump(var=local.templates, top=10);
+	}	
+</cfscript>
 <Cfset local.src_rows = local.q.recordcount>
 
 <table class="maintbl checkboxtbl sort-table">
@@ -82,7 +101,7 @@
 </thead>
 <tbody>
 <cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-	<tr>
+	<tr class="#altRow(local.q.currentRow)#">
 		#renderTemplateLink(arguments.req, local.q.template)#
 		<td>#local.q._function#<cfif len(local.q._function)>()</cfif></td>
 		<td align="right">#NumberFormat(local.q.totalTime/(1000*1000))#</td>
@@ -115,6 +134,41 @@
 	</cfif>
 </tfoot>
 </table>
+
+<cfscript>
+	loop query="local.q" {
+		if ( StructKeyExists( local.templates, local.q.template ) ){
+			local.templates[local.q.template].uses ++;
+		}
+	}
+</cfscript>
+
+
+<cfif StructCount( local.templates ) gt 0>
+	<h3>Template Usage (via current debug logs)</h3>
+	<table class="maintbl checkboxtbl sort-table">
+	<thead>
+		<tr>
+			<th data-type="text">Template</th>
+			<th>Uses</th>
+			<th>Size</th>
+			<th>Last Modified</th>
+		</tr>
+	</thead>
+	<cfoutput>
+		<tbody>
+			<cfloop collection="#local.templates#" key="local.t" value="local.c">
+				<tr class=<cfif local.c.uses eq 0>"unused-template"</cfif>>
+					#renderTemplateLink(arguments.req, local.t)#
+					<td align="right">#NumberFormat(local.c.uses)#</td>
+					<td align="right">#NumberFormat(local.c.file.size)#</td>
+					<td class="no-wrap">#LSDateTimeFormat(local.c.file.dateLastModified)#</td>
+				</tr>
+			</cfloop>
+		</tbody>
+	</cfoutput>
+	</table>
+</cfif>
 <cfoutput>
 	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript("perf")#

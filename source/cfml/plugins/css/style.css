@@ -24,3 +24,20 @@ table pre {
 	margin-top: 10px;
 	margin-left: 3px;
 }
+
+.unused-template, .unused-template TD {
+	background-color:rgb(223 186 186);
+	color:black;
+}
+
+a {
+	color:black;
+}
+
+.no-wrap {
+	white-space: nowrap;
+}
+
+.alt-row {
+	background-color: #DFDFDF;
+}

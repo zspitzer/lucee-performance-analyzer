@@ -61,7 +61,7 @@
 </thead>
 <tbody>
 <cfoutput query="local.q" maxrows="#arguments.req.maxrows#">
-	<tr>
+	<tr class="#altRow(local.q.currentRow)#">
 		#renderTemplateLink(arguments.req, local.q.template)#
 		<td>#NumberFormat(local.q.line)#</td>
 		<td>#local.q.name#</td>

@@ -68,7 +68,7 @@
 <cfsavecontent variable="local.body">
 	<tbody>
 	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-		<tr>
+		<tr class="#altRow(local.q.currentRow)#">
 			<td>#local.q.label#</td>
 			#renderTemplateLink(arguments.req, local.q.template)#
 			<td align="right">#prettyTime(local.q.totalTime*1000*1000)#</td>

@@ -130,7 +130,7 @@
 					console.log("#local.log.scope.cgi.request_url#", #serializeJson(local.log.scope.cgi)#);
 				</script>
 			</cfif>
-		<tr>
+		<tr class="#altRow(local.i)#">
 			<td><a href="?action=debugging.logs&action2=detail&id=#hash(local.log.id&":"&local.log.startTime)#">#path#</td>
 			<td data-value=#DateDiff('s', "2000-1-1", local.log.starttime)#>
 			<cfif DateCompare(local.log.starttime, local.midnight) eq -1>
