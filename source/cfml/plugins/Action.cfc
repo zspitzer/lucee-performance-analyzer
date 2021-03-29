@@ -33,12 +33,16 @@ component extends="lucee.admin.plugin.Plugin" {
 	public void function _display(required string template, required struct lang, required struct app, required struct req) {
 		param name="url.xhr" default="false";
 		request._missing_lang = {};
+		var cfquery = ""; // var scoping
 		request.title = "Perf Analyzer";
 		if ( not url.xhr)
 			variables.renderUtils.includeCSS("style");
+		variables.perf = new Perf();
 		cfinclude(template="toolbar.cfm");
+
 		super._display(argumentcollection=arguments);
 		cfinclude(template="related.cfm");
+		cfinclude(template="footer.cfm");
 		variables.renderUtils.warnMissingLang(request._missing_lang);
 	}
 

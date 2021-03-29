@@ -88,8 +88,3 @@
 	</cfoutput>
 </tbody>
 </table>
-
-<cfoutput>
-	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
-</cfoutput>

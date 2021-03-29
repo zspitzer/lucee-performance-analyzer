@@ -3,8 +3,14 @@ th a {
 	text-decoration: underline;
 }
 
-.toolbar-filter {
-	padding-right: 20px;
+.toolbar-filter, .toolbar-filter a {
+	padding-right: 12px;
+	text-decoration: none;
+}
+
+.toolbar-file-filter, .toolbar-file-filter a {
+	padding-right: 3px;
+	text-decoration: none;
 }
 
 .log-totals TD {

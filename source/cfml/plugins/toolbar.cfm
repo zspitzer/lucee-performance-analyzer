@@ -1,15 +1,18 @@
 <cfscript>
 	param name="arguments.req.template" default ="";
+	param name="arguments.req.url" default ="";
 	variables.template = arguments.req.template;
 	variables.req = arguments.req;
-	local.reports = ["Logs","Templates", "Scopes","Queries","Timers","Exceptions","Memory","Threads"];
-	local.path_reports = ["Templates","Scopes","Queries","Timers","Exceptions"];
+	local.reports = ["Logs", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads"];
+	local.path_reports = ["Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps"];
 	local.lastLogDate = now();
 	local.urlExtra = "";
 	if ( StructKeyExists(arguments.req, "since") and arguments.req.since and isDate(arguments.req.since))
-		urlExtra = "since=#arguments.req.since#";
+		urlExtra = "&since=#arguments.req.since#";
 	if ( Len( arguments.req.template ) )
-		urlExtra = urlExtra & "template=" & urlEncodedFormat( arguments.req.template );
+		urlExtra = urlExtra & "&template=" & urlEncodedFormat( arguments.req.template );
+	if ( Len( arguments.req.url ) )
+		urlExtra = urlExtra & "&url=" & urlEncodedFormat( arguments.req.url );
 
 	local.cfquery = ""; // hide from scopes
 	request.title = "Performance Analyzer";
@@ -53,17 +56,68 @@
 		return "zzz";
 	}
 
+	function prettyTime( n ){
+		if ( arguments.n == 0 )
+			return "";
+		 var s = arguments.n / ( 1000 * 1000 );
+		 if ( int( s ) eq 0 )
+		 	return "";
+		return NumberFormat( s );
+	}
+
+	function prettyNum( n=0, large=false ){
+		if ( arguments.n == 0 )
+			return "";
+
+		if ( int( arguments.n ) eq 0 )
+			 return "";
+		if ( arguments.large )
+			return NumberFormat( arguments.n / 1024 );
+		else
+			return NumberFormat( arguments.n );
+	}
+	local.baseUrl = "?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#";
 </cfscript>
+
+<cfif len( arguments.req.url )>
+	<cfscript>
+		local.delim = "";
+		local.offset = 0;
+		local.pLen = listLen( arguments.req.url, "/" );
+		local.p = 0;
+		local.urlFragments = variables.Perf.splitUrl(arguments.req.url);
+		//dump(local.urlFragments);
+	</cfscript>
+	<cfoutput>
+		<span class="toolbar-file-filter">
+		<h3> URL:
+			<cfloop collection="#local.urlFragments#" key="local.u" value="local.v">
+				<a href="#local.baseUrl#&template=#UrlEncodedFormat( path )#&url=#urlEncodedFormat( local.u )#" style="color:black;"
+					title="Filter by Request URL: #EncodeForHtml(local.u)#">
+					#encodeForHtml( local.v )#
+				</a>
+			</cfloop>
+			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove URL Filter">(clear)</a>
+		</h3>
+		</p>
+		</span>
+		<hr>
+	</cfoutput>
+</cfif>
+
 <cfif len( arguments.req.template )>
 	<cfscript>
 		local.delim = "";
-		local.offset=0;
+		local.offset = 0;
 		local.pLen=listLen( arguments.req.template, "\/" );
-		local.p=0;
+		local.p = 0;
 	</cfscript>
 	<cfoutput>
+		<span class="toolbar-file-filter">
 		<cfif variables.exactTemplatePath>
-			<h1><a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&template=#urlEncodedFormat( arguments.req.template )#" style="color:black;">
+			<h1><a href="#local.baseUrl#&template=#urlEncodedFormat( arguments.req.template )#&Url=#urlEncodedFormat( arguments.req.url )#"
+					title="Filtering exact by Template path: #EncodeForHtml(arguments.req.template)#"
+					style="color:black;">
 				#ListLast( arguments.req.template, "\/" )#
 				</a>
 			</h1>
@@ -76,7 +130,8 @@
 
 					<cfif p lte pLen>
 						#delim#
-						<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&template=#urlEncodedFormat( path )#" style="color:black;">
+						<a href="#local.baseUrl#&template=#urlEncodedFormat( path )#&url=#urlEncodedFormat( arguments.req.url )#" style="color:black;"
+							title="Filter by Template path: #EncodeForHtml(path)#">
 							#encodeForHtml( folder )#
 						</a>
 					</cfif>
@@ -85,18 +140,19 @@
 					delim = mid( arguments.req.template, local.offset, 1 );
 				</cfscript>
 			</cfloop>
-			&nbsp; <a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#" class="toolbar-filter">(clear)</a>
+			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove Template Path Filter">(clear)</a>
 		</h3>
-	</p>
-	<hr>
-</cfoutput>
+		</p>
+	</span>
+		<hr>
+	</cfoutput>
 </cfif>
 
 <div class="btn-group" role="group">
 <cfoutput>
 	<cfloop array=#local.reports# item="local.report">
 		<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#report#&#urlExtra#" class="toolbar-filter">
-			<cfif arguments.req.pLuginAction eq report><b></cfif>#ucase(report)#
+			<cfif arguments.req.pLuginAction eq report><b></cfif>#ucFirst(report)#
 			<cfif arguments.req.pLuginAction eq report></b></cfif>
 		</a>
 	</cfloop>
@@ -106,14 +162,14 @@
 <cfoutput>
 <cfif StructKeyExists( arguments.req, "since" )>
 	<p>Filter: Only reporting logs since #DateTimeFormat( arguments.req.since )#
-		<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#" class="toolbar-filter">
+		<a href="#local.baseUrl#" class="toolbar-filter">
 		 (remove filter)
 		</a>
 	</p>
 </cfif>
 <cfif lastLogDate neq "false" or StructKeyExists( arguments.req, "since" )>
 	<p>Refresh with only new logs
-		<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#&since=#DateTimeFormat(lastlogDate,"yyyy-mm-dd HH:MM:SS")#" class="toolbar-filter">
+		<a href="#local.baseUrl#&since=#DateTimeFormat(lastlogDate,"yyyy-mm-dd HH:MM:SS")#" class="toolbar-filter">
 			#LSDateTimeFormat( lastLogDate )#
 	   </a>
 </p>

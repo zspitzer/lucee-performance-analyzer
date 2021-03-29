@@ -1,27 +1,10 @@
 <!--- needed for toolbar.cfm --->
 <cfscript>
-	local.debugLogs = {};
-	local.debugLogs.data = []
-	admin action="getLoggedDebugData"
-		type="#request.adminType#"
-		password="#session["password"&request.adminType]#"
-		returnVariable="local.debugLogs.data";
+
 	local.serverScope = getPageContext().scope( createObject( "java", "lucee.runtime.type.scope.Scope" ).SCOPE_SERVER )
 	local.configServer= getPageContext().getConfig().getConfigServer( session[ "password" & request.adminType ] );
 	local.webContexts = configServer.getConfigWebs();
 	setTitle( "Memory Scopes" );
-
-	function prettyNum( n=0, large=true ){
-		if ( arguments.n == 0 )
-			return "";
-
-		if ( int( arguments.n ) eq 0 )
-			 return "";
-		if ( arguments.large )
-			return NumberFormat( arguments.n / 1024 );
-		else
-			return NumberFormat( arguments.n );
-	}
 
 	local.rows = 1;
 	local.total_app_size = sizeOf( serverScope );
@@ -29,12 +12,6 @@
 	local.total_session_size  = 0;
 	local.total_session_count  = 0;
 </cfscript>
-
-<cfadmin action="getLoggedDebugData"
-	type="#request.adminType#"
-	password="#session["password"&request.adminType]#"
-	returnVariable="local.debugLogs.data">
-
 
 <cfsavecontent variable="local.body">
 	<cfoutput>
@@ -64,7 +41,7 @@
 				<tr>
 					<td>#config.getRootDirectory()#</td>
 					<td>#app#</td>
-					<td align="right">#prettyNum( local.app_size )#</td>
+					<td align="right">#prettyNum( local.app_size, true )#</td>
 					<td align="right">#prettyNum( structCount( apps[ app ] ), false)#</td>
 					<cfif structKeyExists( sessions, app )>
 						<cfscript>
@@ -73,7 +50,7 @@
 							local.total_session_count += structCount( sessions[ app ] );
 						</cfscript>
 						<td align="right">#prettyNum( structCount( sessions[ app ]), false )#</td>
-						<td align="right">#prettyNum( local.session_size )#</td>
+						<td align="right">#prettyNum( local.session_size, true)#</td>
 					<cfelse>
 						<td></td>
 						<td></td>
@@ -87,10 +64,10 @@
 	<tr class="log-totals">
 		<td colspan="2" align="center">Totals</td>
 		<cfoutput>
-			<td align="right">#prettyNum( local.total_app_size )#</td>
+			<td align="right">#prettyNum( local.total_app_size, true )#</td>
 			<td align="right">#prettyNum( local.total_app_keys, false )#</td>
 			<td align="right">#prettyNum( local.total_session_count, false )#</td>
-			<td align="right">#prettyNum( local.total_session_size )#</td>
+			<td align="right">#prettyNum( local.total_session_size, true )#</td>
 		</cfoutput>
 	</tr>
 </cfsavecontent>
@@ -103,10 +80,10 @@
 <tr>
 	<th data-type="text">WebRoot</th>
 	<th data-type="text">Application</th>
-	<th>Scope Kb</th>
+	<th>Scope Mb</th>
 	<th>Keys</th>
 	<th>Session Count</th>
-	<th>Size Kb</th>
+	<th>Size Mb</th>
 </tr>
 <cfif local.rows gt 0>
 	<cfoutput>#totals#</cfoutput>
@@ -121,7 +98,3 @@
 	</cfif>
 </tfoot>
 </table>
-<cfoutput>
-	#variables.renderUtils.includeLang()#
-	#variables.renderUtils.includeJavascript("perf")#
-</cfoutput>

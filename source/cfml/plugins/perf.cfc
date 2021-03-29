@@ -1,0 +1,506 @@
+component {
+	this.debugLogs = [];
+	this.debugLogsIndex = {};
+	this.filtered = false;
+
+	public function init (){
+		admin action="getLoggedDebugData"
+			type="#request.adminType#"
+			password="#session["password"&request.adminType]#"
+			returnVariable="this.debugLogs";
+		timer label="prepare Logs" {
+			loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
+				if ( !StructKeyExists(this.debugLogs[i], "scope") )
+					this.debugLogs[i].scope.cgi = local.log.cgi;// pre 5.3++
+				this.debugLogs[i].size = SizeOf(this.debugLogs[i]); // expensive, do it once
+				this.debugLogsIndex[this.debugLogs[i].id]=i;
+			}
+		}
+		if (IsNull(this.debugLogs))
+			this.debugLogs = [];
+	}
+
+	public function purgeLogs(){
+		try {
+			admin action="purgeDebugPool"
+				type="#request.adminType#"
+				password="#session["password"&request.adminType]#";
+			this.debugLogs = [];
+		} catch (e){
+			```
+				<cfoutput>
+					<b>Sorry, Purge logs failed, it was added in Lucee 5.3.8.80 (this is #server.lucee.version#)</b>
+				</cfoutput>
+				<cfdump var="#cfcatch#" expand="false" label='cfadmin action="purgeDebugPool" failed'>
+				<cfabort>
+			```
+		}
+	}
+
+	public function splitUrl(requestUrl){
+		var frags = [=]; // ordered
+		var offset = 0;
+		var str = "";
+		var doubleSlash = find( "//", arguments.requestUrl );
+		var singleSlash = find( "/", arguments.requestUrl, doubleSlash + 2 );
+		var qs = find( "?", arguments.requestUrl);
+		if (singleSlash eq 0 ){
+			frags[ arguments.requestUrl ] = arguments.requestUrl;
+		} else {
+			var f = Mid( arguments.requestUrl, 1, singleSlash );
+			frags[f] = f;
+			offset = singleSlash + 1;
+			if (len(arguments.requestUrl) gt offset){
+				if (qs gt 0){
+					str = Mid(arguments.requestUrl, offset, qs-offset);
+				} else {
+					str = Mid(arguments.requestUrl, offset);
+				}
+
+				if (len(str) gt 0){
+					loop list="#str#" item="folder" delimiters="/" {
+						f = f & folder;
+						frags[f] = folder;
+					}
+				}
+			}
+
+		}
+		if (qs gt 0){
+			frags[arguments.requestUrl] = Mid(arguments.requestUrl, qs);
+		}
+		/*
+		dump(local);
+		dump(arguments);
+		abort;
+		*/
+		return frags;
+
+	};
+
+	public function getHost(requestUrl){
+		local.doubleSlash = find( "//", arguments.requestUrl );
+		if (doubleSlash gte 0){
+			local.singleSlash = find( "/", arguments.requestUrl, doubleSlash + 2 );
+			if (singleSlash gt 0)
+				return Mid( arguments.requestUrl, 1, singleSlash );
+		}
+		return arguments.requestUrl;
+	}
+
+	public function getLog(string logId){
+		return this.debugLogs[ this.debugLogsIndex[ arguments.logId ] ];
+	}
+
+	public function getLogs(struct req={}, string logType=""){
+		var reqUrl = arguments.req?.url?: "";
+		var reqTemplate = arguments.req?.template?: "";
+		if ( IsNull(reqUrl) && logType == ""){
+			return local.debugLogs;
+		} else {
+			if (len(reqUrl) gt 0){
+				timer label="logs filter reqUrl(#reqUrl#)" {
+					local.logs = this.debugLogs.filter(function(row){
+						return arguments.row.scope.cgi.REQUEST_URL contains reqUrl;
+					});
+				}
+			} else {
+				local.logs = this.debugLogs;
+			}
+			return getFilteredLogs(logs, reqTemplate, arguments.logType);
+		}
+	}
+
+	public function getRawLogCount(){
+		return ArrayLen( this.debugLogs );
+	}
+
+	public function getDebugMemUsage(){
+		local.s = 0;
+		loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
+			local.s += this.debugLogs[local.i].size;
+		}
+		return DecimalFormat(local.s/1024/1024) & " Mb";
+	}
+
+	function getFilteredLogs(logs, reqTemplate, logType){
+		local.q = false;
+		timer label="getFilteredLogs:#arguments.logType#" {
+			switch (arguments.logType){
+				case "timers":
+					local.result = getTimers(arguments.logs);
+					break;
+				case "pages":
+					local.result = getPages(arguments.logs);
+					break;
+				case "exceptions":
+					local.result = getExceptions(arguments.logs);
+					break;
+				case "scopes":
+					local.result = getScopes(arguments.logs);
+					break;
+				case "queries":
+					local.result = getQueries(arguments.logs);
+					break;
+				case "logs":
+					local.result = getDebugLogs(arguments.logs);
+					break;
+				case "dumps":
+					local.result = getDumps(arguments.logs);
+					break;
+				case "aborts":
+					local.result = getAborts(arguments.logs);
+					break;
+				case "traces":
+					local.result = getTraces(arguments.logs);
+					break;
+				default:
+					throw "write code zac! [#arguments.logType#]";
+			}
+		}
+		result.sourceRows = local.result.q.recordcount;
+
+		if ( len( arguments.reqTemplate ) gt 0 ){
+			this.reqTemplate = arguments.reqTemplate;
+			timer label="query.filter reqTemplate(#arguments.reqTemplate#)"{
+				local.result.q = local.result.q.filter(function(row){
+					return arguments.row.template contains reqTemplate;
+				});
+			}
+		}
+
+		return local.result;
+	}
+
+	// TODO since
+
+	function getTimers(logs){
+		var q = QueryNew( "label,time,executions,template,line,requestUrl" );
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			if ( structKeyExists( local.log, "timers") ){
+				local.timers = local.log.timers;
+				loop query="#local.timers#" {
+					local.r = queryAddRow( q, queryRowData( local.timers, local.timers.currentrow) );
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				}
+			}
+		}
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  label, sum(time) as totalTime, count(*) as executions, template, line,
+					min(time) as minTime, max(time) as maxTime, avg(time) as avgTime
+			from    q
+			group by label, template
+			order by totalTime desc
+		</cfquery>
+		```
+		return {
+			q: q
+		};
+	}
+
+	function getPages(logs){
+		var q = QueryNew('id,count,min,max,avg,app,load,query,total,src,template,requestUrl');
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			if ( StructKeyExists( local.log, "pages" )){
+				local.pages=local.log.pages;
+				loop query="#local.pages#" {
+					local.r = queryAddRow( q, queryRowData( local.pages, local.pages.currentrow ) );
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					QuerySetCell(q, "template", local.q.src[r], local.r );
+				}
+			}
+		}
+		<!--- Qoq doesn't like count --->
+		```
+		<cfquery name="local.q" dbtype="query">
+			select 	id,	count as _count, min as _min, max as _max, avg as _avg, app, load, query,	total,	src, '' as template,  '' as _function
+			from    q
+		</cfquery>
+		<cfscript>
+			loop query="q" {
+				local.tmp = ListToArray( local.q.src, "$" );
+				if ( ArrayLen( local.tmp ) eq 2 ){
+					QuerySetCell( q, "_function", local.tmp[2], q.currentrow );
+				}
+				QuerySetCell( q, "template", local.tmp[1], q.currentrow );
+			}
+		</cfscript>
+
+		<cfquery name="local.q" dbtype="query">
+			select  template, _function, min(_min) as minTime, max(_max) as maxTime, avg(_avg) as avgTime,
+					avg(query) as avgQuery, avg(load) as avgLoad, sum(total) as totalTime, sum(_count) as totalCount,
+					sum(total) as total, count(*) as executions
+			from	q
+			group by template, _function
+			order by totalTime desc
+		</cfquery>
+		```
+
+		return {
+			q: q
+		};
+	}
+
+	function getScopes(logs){
+		var q = QueryNew( "template,line,scope,count,name,requestUrl" );
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if implicitAccess isn't enabled in debug settings, there won't be data
+			if (structKeyExists( local.log, "implicitAccess" )){
+				local.implicitAccess = local.log.implicitAccess;
+				loop query="#local.implicitAccess#" {
+					QueryAddRow( q, QueryRowData( local.implicitAccess, local.implicitAccess.currentrow ) );
+				}
+			}
+		}
+		<!--- Qoq doesn't like count --->
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  template, line, scope as resolvedScope, count as total ,name
+			from    q
+		</cfquery>
+
+		<cfquery name="local.q" dbtype="query">
+			select  template, line, resolvedScope, sum(total) total ,name
+			from    q
+			group by template, line, resolvedScope, name
+			order by total desc
+		</cfquery>
+		```
+
+		return {
+			q: q
+		};
+	}
+
+	function getExceptions(logs){
+		var q = QueryNew( "_type,message,detail,template,line,requestUrl" );
+
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if exceptions isn't enabled in debug settings, there won't be data
+			if ( StructKeyExists( local.log, "exceptions" ) ){
+				local.exceptions = local.log.exceptions;
+				loop array="#local.exceptions#" item="local.exp"{
+					local.r = QueryAddRow( q );
+					QuerySetCell( local.q, "_type", exp.type, r );
+					QuerySetCell( local.q, "message", exp.message, r );
+					QuerySetCell( local.q, "detail", exp.detail, r );
+					QuerySetCell( local.q, "line", exp.TagContext[1].line, r );
+					QuerySetCell( local.q, "template", exp.TagContext[1].template, r );
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				}
+			}
+		}
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  _type, template, message, detail, line, count(*) as executions
+			from    q
+			group by _type, template, message, detail, line
+			order by executions desc
+		</cfquery>
+		```
+		return {
+			q: q
+		};
+	}
+
+	function getDumps(logs){
+		var q = QueryNew( "output,template,line,requestUrl" );
+
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if exceptions isn't enabled in debug settings, there won't be data
+			if ( StructKeyExists( local.log, "dumps" ) ){
+				local.dumps = local.log.dumps;
+				loop query="#local.dumps#"{
+					local.r = queryAddRow(q, queryRowData(local.dumps, local.dumps.currentrow));
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				}
+			}
+		}
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  output, template, line, requestUrl, count(*) as executions
+			from    q
+			group by output, template, line, requestUrl
+			order by executions desc
+		</cfquery>
+		```
+		return {
+			q: q
+		};
+	}
+	//KeyConstants._type, KeyConstants._category, KeyConstants._text, KeyConstants._template, KeyConstants._line,
+			//KeyConstants._action, KeyConstants._varname, KeyConstants._varvalue, KeyConstants._time
+
+	function getTraces(logs){
+		var q = QueryNew( "type,category,text,template,line,action,var,varValue,time,requestUrl" );
+
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if exceptions isn't enabled in debug settings, there won't be data
+			if ( StructKeyExists( local.log, "traces" ) ){
+				local.traces = local.log.traces;
+				loop query="#local.traces#"{
+					local.r = queryAddRow(q, queryRowData(local.traces, local.traces.currentrow));
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				}
+			}
+		}
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  type, category, text, template, line, action, var, varValue, time, requestUrl, count(*) as executions
+			from    q
+			group by type, category, text, template, line, action, var, varValue, time, requestUrl
+			order by executions desc
+		</cfquery>
+		```
+		return {
+			q: q
+		};
+	}
+
+	function getAborts(logs){
+		var q = QueryNew( "template,line,requestUrl" );
+
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if exceptions isn't enabled in debug settings, there won't be data
+			if ( StructKeyExists( local.log, "abort" ) ){
+				local.abort = local.log.abort;
+				local.r = queryAddRow(q);
+				QuerySetCell(q, "template", local.abort.template, r );
+				QuerySetCell(q, "line", local.abort.line, r );
+				QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+			}
+		}
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  template, line, requestUrl, count(*) as executions
+			from    q
+			group by template, line, requestUrl
+			order by executions desc
+		</cfquery>
+		```
+		return {
+			q: q
+		};
+	}
+
+	function getQueries(logs){
+		var q = QueryNew("name,time,sql,src,line,count,datasource,usage,cacheType,requestUrl,template" );
+
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+			// if queries isn't enabled in debug settings, there won't be data
+			if (structKeyExists(local.log, "queries")){
+				local.queries=local.log.queries;
+				loop query="#local.queries#" {
+					local.r = queryAddRow(q, queryRowData(local.queries, local.queries.currentrow));
+					QuerySetCell(q, "template", local.q.src[r], r );
+					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				}
+			}
+		}
+		<!--- Qoq doesn't like count --->
+		```
+		<cfquery name="local.q" dbtype="query">
+			select  name, time, sql, src as template, line,	count as total, datasource, cacheType
+			from    q
+		</cfquery>
+
+		<cfquery name="local.q" dbtype="query">
+			select  name, sum(time) as totalTime, min(time) as minTime, max(time) as maxTime, avg(time) as avgTime,
+					template,line,	sum(total) as total, datasource, cacheType, count(*) as executions
+			from    q
+			group by name, template, line, datasource, cacheType
+			order by totalTime desc
+		</cfquery>
+		```
+
+		return {
+			q: q
+		};
+	}
+
+	function getDebugLogs(logs){
+		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size" );
+		local.totals = {
+			app = 0,
+			query: 0,
+			total: 0,
+			load: 0,
+			size: 0,
+			scope: 0,
+			exceptions: 0
+		};
+		local.log = {};
+		local.rows = 0;
+		loop from="#arguments.logs.len()#" to="1" step="-1" index="local.i" {
+			local.log = arguments.logs[local.i];
+			local.rows ++;
+			//dump(local.log);
+			local.cgi  = local.log.scope.cgi;
+			var path = local.cgi.REQUEST_URL
+
+			if (local.cgi.REQUEST_METHOD eq "POST")
+				path = "POST #PATH#";
+
+			var _scope = "0";
+			if ( StructKeyExists( local.log, "implicitAccess" ) and local.log.implicitAccess.recordcount ){
+				_scope = QueryReduce( local.log.implicitAccess,
+					function( problems=0, row, rowNumber, recordset ){
+						return arguments.problems + arguments.row.count;
+					}
+				);
+			}
+			var _total=0;
+			var _query=0;
+			var _app=0;
+			var _load=0;
+			var _exp=0
+			if ( StructKeyExists( local.log, "pages" ) ){
+				loop query="local.log.pages"{
+					_total += local.log.pages.total;
+					_query+= local.log.pages.query;
+					_app += local.log.pages.app;
+					_load += local.log.pages.load;
+				}
+			}
+
+			if (StructKeyExists( local.log, "exceptions" ) )
+				_exp += ArrayLen( local.log.exceptions );
+
+
+			local.r = QueryAddRow( q );
+			QuerySetCell( local.q, "size", log.size, local.r);
+			QuerySetCell( local.q, "id", log.id, local.r);
+			QuerySetCell( local.q, "starttime", log.starttime, local.r);
+			QuerySetCell( local.q, "template", local.cgi.script_name, local.r);
+			QuerySetCell( local.q, "path", path, local.r);
+			QuerySetCell( local.q, "total", _total, local.r);
+			QuerySetCell( local.q, "query", _query, local.r);
+			QuerySetCell( local.q, "load", _load, local.r);
+			QuerySetCell( local.q, "app", _app, local.r);
+			QuerySetCell( local.q, "scope", _scope, local.r);
+			QuerySetCell( local.q, "exceptions", _exp, local.r);
+			QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+
+			local.totals.size +=  + local.log.size / 1000;
+			local.totals.app += _app;
+			local.totals.query += _query;
+			local.totals.total += _total;
+			local.totals.load += _load;
+			local.totals.scope += _scope;
+			local.totals.exceptions += _exp;
+		}
+		return {
+			totals: local.totals,
+			q: local.q
+		};
+	}
+}
