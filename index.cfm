@@ -5,7 +5,7 @@
 	request.version = DeserializeJson(FileRead("box.json")).version;
 	request.subtitle = "";
 	request.title = "Lucee Performance Analyzer - #request.version#";
-	param name="url.pluginAction" default="logs";
+	param name="url.pluginAction" default="analysis";
 	param name="url.xhr" default="false";
 	variables.plugin = new source.cfml.plugins.Action(lang={},app={});
 
@@ -28,7 +28,7 @@
 		}
 	}
 </cfscript>
-
+<cfcontent reset="yes">
 <html>
 	<head>
 		<cfoutput>
@@ -47,7 +47,7 @@
 		</cfif>
 	</div>
 	<div class="content">
-	#body#
+	#variables.plugin.getRenderUtils().cleanHtml(body)#
 </div>
 </cfoutput>
 </body>

@@ -17,4 +17,8 @@
 
 	#variables.renderUtils.includeLang()#
 	#variables.renderUtils.includeJavascript( "perf" )#
+
+	<p>
+		<a href="https://github.com/zspitzer/lucee-performance-analyzer">Lucee Performance Analyzer</a>
+	</p>
 </cfoutput>

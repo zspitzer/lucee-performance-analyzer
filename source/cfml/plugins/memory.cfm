@@ -5,7 +5,7 @@
 	local.configServer= getPageContext().getConfig().getConfigServer( session[ "password" & request.adminType ] );
 	local.webContexts = configServer.getConfigWebs();
 	setTitle( "Memory Scopes" );
-
+	local.r = 0;
 	local.rows = 1;
 	local.total_app_size = sizeOf( serverScope );
 	local.total_app_keys = structCount( serverScope );
@@ -38,7 +38,7 @@
 					local.total_app_size += local.app_size;
 					local.total_app_keys += structCount( apps[ app ] );
 				</cfscript>
-				<tr>
+				<tr class="#altRow( local.r )#">
 					<td>#config.getRootDirectory()#</td>
 					<td>#app#</td>
 					<td align="right">#prettyNum( local.app_size, true )#</td>
@@ -56,6 +56,7 @@
 						<td></td>
 					</cfif>
 				</tr>
+				<cfset local.r++>
 			</cfloop>
 		</cfloop>
 	</cfoutput>

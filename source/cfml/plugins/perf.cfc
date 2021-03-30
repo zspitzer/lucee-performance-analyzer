@@ -2,6 +2,7 @@ component {
 	this.debugLogs = [];
 	this.debugLogsIndex = {};
 	this.filtered = false;
+	variables.cfquery ="";
 
 	public function init (){
 		admin action="getLoggedDebugData"
@@ -10,10 +11,11 @@ component {
 			returnVariable="this.debugLogs";
 		timer label="prepare Logs" {
 			loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
-				if ( !StructKeyExists(this.debugLogs[i], "scope") )
+				if ( !StructKeyExists( this.debugLogs[i], "scope" ) )
 					this.debugLogs[i].scope.cgi = local.log.cgi;// pre 5.3++
-				this.debugLogs[i].size = SizeOf(this.debugLogs[i]); // expensive, do it once
-				this.debugLogsIndex[this.debugLogs[i].id]=i;
+				if ( !StructKeyExists( this.debugLogs[i], "size" ) )
+					this.debugLogs[i].size = SizeOf(this.debugLogs[i]); // expensive, do it once (cheeky, debug logs are writeable)
+				this.debugLogsIndex[this.debugLogs[i].id] = i;
 			}
 		}
 		if (IsNull(this.debugLogs))
@@ -101,7 +103,7 @@ component {
 			if (len(reqUrl) gt 0){
 				timer label="logs filter reqUrl(#reqUrl#)" {
 					local.logs = this.debugLogs.filter(function(row){
-						return arguments.row.scope.cgi.REQUEST_URL contains reqUrl;
+						return arguments.row.scope.cgi.REQUEST_URL contains variables.reqUrl;
 					});
 				}
 			} else {
@@ -164,7 +166,7 @@ component {
 			this.reqTemplate = arguments.reqTemplate;
 			timer label="query.filter reqTemplate(#arguments.reqTemplate#)"{
 				local.result.q = local.result.q.filter(function(row){
-					return arguments.row.template contains reqTemplate;
+					return arguments.row.template contains this.reqTemplate;
 				});
 			}
 		}
@@ -175,28 +177,28 @@ component {
 	// TODO since
 
 	function getTimers(logs){
-		var q = QueryNew( "label,time,executions,template,line,requestUrl" );
+		var q_timers = QueryNew( "label,time,executions,template,line,requestUrl" );
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
 			if ( structKeyExists( local.log, "timers") ){
 				local.timers = local.log.timers;
 				loop query="#local.timers#" {
-					local.r = queryAddRow( q, queryRowData( local.timers, local.timers.currentrow) );
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					local.r = queryAddRow( q_timers, queryRowData( local.timers, local.timers.currentrow) );
+					QuerySetCell(q_timers, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_timers" dbtype="query">
 			select  label, sum(time) as totalTime, count(*) as executions, template, line,
 					min(time) as minTime, max(time) as maxTime, avg(time) as avgTime
-			from    q
-			group by label, template
+			from    q_timers
+			group by label, template, line
 			order by totalTime desc
 		</cfquery>
 		```
 		return {
-			q: q
+			q: q_timers
 		};
 	}
 
@@ -215,64 +217,64 @@ component {
 		}
 		<!--- Qoq doesn't like count --->
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_pages" dbtype="query">
 			select 	id,	count as _count, min as _min, max as _max, avg as _avg, app, load, query,	total,	src, '' as template,  '' as _function
 			from    q
 		</cfquery>
 		<cfscript>
-			loop query="q" {
-				local.tmp = ListToArray( local.q.src, "$" );
+			loop query="q_pages" {
+				local.tmp = ListToArray( local.q_pages.src, "$" );
 				if ( ArrayLen( local.tmp ) eq 2 ){
-					QuerySetCell( q, "_function", local.tmp[2], q.currentrow );
+					QuerySetCell( q_pages, "_function", local.tmp[2], q_pages.currentrow );
 				}
-				QuerySetCell( q, "template", local.tmp[1], q.currentrow );
+				QuerySetCell( q_pages, "template", local.tmp[1], q_pages.currentrow );
 			}
 		</cfscript>
 
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_pages" dbtype="query">
 			select  template, _function, min(_min) as minTime, max(_max) as maxTime, avg(_avg) as avgTime,
 					avg(query) as avgQuery, avg(load) as avgLoad, sum(total) as totalTime, sum(_count) as totalCount,
 					sum(total) as total, count(*) as executions
-			from	q
+			from	q_pages
 			group by template, _function
 			order by totalTime desc
 		</cfquery>
 		```
 
 		return {
-			q: q
+			q: q_pages
 		};
 	}
 
 	function getScopes(logs){
-		var q = QueryNew( "template,line,scope,count,name,requestUrl" );
+		var q_scopes = QueryNew( "template,line,scope,count,name,requestUrl" );
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
 			// if implicitAccess isn't enabled in debug settings, there won't be data
 			if (structKeyExists( local.log, "implicitAccess" )){
 				local.implicitAccess = local.log.implicitAccess;
 				loop query="#local.implicitAccess#" {
-					QueryAddRow( q, QueryRowData( local.implicitAccess, local.implicitAccess.currentrow ) );
+					QueryAddRow( q_scopes, QueryRowData( local.implicitAccess, local.implicitAccess.currentrow ) );
 				}
 			}
 		}
 		<!--- Qoq doesn't like count --->
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_scopes" dbtype="query">
 			select  template, line, scope as resolvedScope, count as total ,name
-			from    q
+			from    q_scopes
 		</cfquery>
 
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_scopes" dbtype="query">
 			select  template, line, resolvedScope, sum(total) total ,name
-			from    q
-			group by template, line, resolvedScope, name
-			order by total desc
+			from    q_scopes
+			group 	by template, line, resolvedScope, name
+			order 	by total desc
 		</cfquery>
 		```
 
 		return {
-			q: q
+			q: q_scopes
 		};
 	}
 
@@ -296,7 +298,7 @@ component {
 			}
 		}
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_exceptions" dbtype="query">
 			select  _type, template, message, detail, line, count(*) as executions
 			from    q
 			group by _type, template, message, detail, line
@@ -304,7 +306,7 @@ component {
 		</cfquery>
 		```
 		return {
-			q: q
+			q: local.q_exceptions
 		};
 	}
 
@@ -323,7 +325,7 @@ component {
 			}
 		}
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_dumps" dbtype="query">
 			select  output, template, line, requestUrl, count(*) as executions
 			from    q
 			group by output, template, line, requestUrl
@@ -331,7 +333,7 @@ component {
 		</cfquery>
 		```
 		return {
-			q: q
+			q: q_dumps
 		};
 	}
 	//KeyConstants._type, KeyConstants._category, KeyConstants._text, KeyConstants._template, KeyConstants._line,
@@ -352,7 +354,7 @@ component {
 			}
 		}
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_traces" dbtype="query">
 			select  type, category, text, template, line, action, var, varValue, time, requestUrl, count(*) as executions
 			from    q
 			group by type, category, text, template, line, action, var, varValue, time, requestUrl
@@ -360,7 +362,7 @@ component {
 		</cfquery>
 		```
 		return {
-			q: q
+			q: q_traces
 		};
 	}
 
@@ -379,7 +381,7 @@ component {
 			}
 		}
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_aborts" dbtype="query">
 			select  template, line, requestUrl, count(*) as executions
 			from    q
 			group by template, line, requestUrl
@@ -387,7 +389,7 @@ component {
 		</cfquery>
 		```
 		return {
-			q: q
+			q: q_aborts
 		};
 	}
 
@@ -408,22 +410,22 @@ component {
 		}
 		<!--- Qoq doesn't like count --->
 		```
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_queries" dbtype="query">
 			select  name, time, sql, src as template, line,	count as total, datasource, cacheType
 			from    q
 		</cfquery>
 
-		<cfquery name="local.q" dbtype="query">
+		<cfquery name="local.q_queries" dbtype="query">
 			select  name, sum(time) as totalTime, min(time) as minTime, max(time) as maxTime, avg(time) as avgTime,
 					template,line,	sum(total) as total, datasource, cacheType, count(*) as executions
-			from    q
+			from    local.q_queries
 			group by name, template, line, datasource, cacheType
 			order by totalTime desc
 		</cfquery>
 		```
 
 		return {
-			q: q
+			q: q_queries
 		};
 	}
 

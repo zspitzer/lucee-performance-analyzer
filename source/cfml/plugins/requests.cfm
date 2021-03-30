@@ -15,7 +15,7 @@
 
 <cfsavecontent variable="local.body">
 	<tbody>
-	<cfloop query="local.q">
+	<cfloop query="local.q" maxrows="#arguments.req.maxrows#">
 		<cfoutput>
 			<cfif arguments.req.consoleDump>
 				<script>
@@ -23,10 +23,12 @@
 				</script>
 			</cfif>
 			<tr class="#altRow( local.q.currentRow )#">
-				<td><a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">#path#<a></td>
+				<td><a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">
+					#renderRequestLink( arguments.req, local.q.path )#
+				<a></td>
 				<td>
 				<a href="?action=debugging.logs&action2=detail&id=#hash(local.q.id&":"&local.q.startTime)#" title="view single debug log">Raw Log</a>,&nbsp;
-				<cfset host = variables.perf.getHost(q.requestUrl)>
+				<cfset local.host = variables.perf.getHost(q.requestUrl)>
 				<a href="#local.baseUrl#&url=#urlEncodedFormat(host)#" title="Filter by Host: #encodeForHtml(host)#">By Host<a></td>
 				<td data-value=#DateDiff( 's', "2000-1-1", local.q.starttime )#>
 				<cfif DateCompare( local.q.starttime, local.midnight ) eq -1>

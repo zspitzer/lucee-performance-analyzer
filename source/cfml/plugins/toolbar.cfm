@@ -3,8 +3,11 @@
 	param name="arguments.req.url" default ="";
 	variables.template = arguments.req.template;
 	variables.req = arguments.req;
-	local.reports = ["Logs", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads"];
-	local.path_reports = ["Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps"];
+
+	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads"];
+	if ( Len( arguments.req.template ) || Len( arguments.req.url ) )
+		ArrayPrepend(local.reports, "Analysis");
+	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces"];
 	local.lastLogDate = now();
 	local.urlExtra = "";
 	if ( StructKeyExists(arguments.req, "since") and arguments.req.since and isDate(arguments.req.since))
@@ -21,15 +24,25 @@
 	if ( variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
 		variables.exactTemplatePath = false;
 
-	function renderTemplateLink ( req, linkTemplate ){
+	function renderRequestLink ( req, linkTemplate ){
 		var temp = arguments.linkTemplate;
-		if (len( arguments.req.template ) gt 0 and find( arguments.req.template, arguments.linkTemplate, 1 ) eq 1)
-			temp = mid( arguments.linkTemplate, len( arguments.req.template ) + 2 );
+		if (len( arguments.req.url ) gt 0 and find( arguments.req.url, arguments.linkTemplate, 1 ) eq 1)
+			temp = mid( arguments.linkTemplate, len( arguments.req.url ) + 1 );
+		echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#'
+			& '&url=#urlEncodedFormat(arguments.linkTemplate)#"'
+			& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>');
+
+	}
+
+	function renderTemplateLink ( req, reqPath ){
+		var temp = arguments.reqPath;
+		if (len( arguments.req.template ) gt 0 and find( arguments.req.template, arguments.reqPath, 1 ) eq 1)
+			temp = mid( arguments.reqPath, len( arguments.req.template ) + 2 );
 		if ( !variables.exactTemplatePath ){
 			echo("<td>");
 			echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#'
-				& '&template=#urlEncodedFormat(arguments.linkTemplate)#"'
-				& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>')
+				& '&template=#urlEncodedFormat(arguments.reqPath)#"'
+				& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>');
 			echo("</td>");
 		}
 	}
@@ -51,7 +64,7 @@
 	}
 
 	function altRow(currentrow){
-		if ( arguments.currentRow mod 2 eq 0 )
+		if ( arguments.currentRow mod 2 eq 1 )
 			return "alt-row";
 		return "zzz";
 	}
@@ -99,7 +112,6 @@
 			</cfloop>
 			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove URL Filter">(clear)</a>
 		</h3>
-		</p>
 		</span>
 		<hr>
 	</cfoutput>
@@ -142,7 +154,6 @@
 			</cfloop>
 			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove Template Path Filter">(clear)</a>
 		</h3>
-		</p>
 	</span>
 		<hr>
 	</cfoutput>

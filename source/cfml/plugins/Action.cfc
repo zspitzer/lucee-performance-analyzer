@@ -30,6 +30,10 @@ component extends="lucee.admin.plugin.Plugin" {
 		setting showdebugoutput="true";
 	}
 
+	public function getRenderUtils(){
+		return variables.renderUtils;
+	}
+
 	public void function _display(required string template, required struct lang, required struct app, required struct req) {
 		param name="url.xhr" default="false";
 		request._missing_lang = {};
@@ -40,18 +44,18 @@ component extends="lucee.admin.plugin.Plugin" {
 		variables.perf = new Perf();
 		cfinclude(template="toolbar.cfm");
 
-		super._display(argumentcollection=arguments);
-		cfinclude(template="related.cfm");
+		cfinclude(template=arguments.template);
+
 		cfinclude(template="footer.cfm");
-		variables.renderUtils.warnMissingLang(request._missing_lang);
+		//variables.renderUtils.warnMissingLang(request._missing_lang);
 	}
 
 	public function asset(struct lang, struct app, struct req) output=false {
-		param name="req.asset";
+		param name="arguments.req.asset";
 		// dunno why, sometimes this doesn't exist and throws an error
 		if (not structKeyExists(variables, "renderUtils") )
 			variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );
-		renderUtils.returnAsset(url.asset);
+		variables.renderUtils.returnAsset(url.asset);
 	}
 
 	public function getLang(struct lang, struct app, struct req) output=false {

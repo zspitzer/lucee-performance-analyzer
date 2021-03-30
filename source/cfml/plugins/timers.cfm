@@ -30,9 +30,10 @@
 
 <cfsavecontent variable="local.totals">
 	<tr class="log-totals">
-		<td colspan="#hasTemplates()+1#" align="right">Totals</td>
 		<cfoutput>
+			<td colspan="#hasTemplates()+2#" align="right">Totals</td>
 			<td align="right">#prettyTime( local._total_time * 1000 * 1000 )#</td>
+			<td colspan="3"></td>
 			<td align="right">#prettyNum( local._total_executions )#</td>
 		</cfoutput>
 	</tr>

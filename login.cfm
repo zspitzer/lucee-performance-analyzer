@@ -21,18 +21,24 @@
 			variables.login_error = cfcatch.message;
 		}
 	}
-	variables.plugin.getRenderUtils().includeCSS("style");
+	variables.style=FileRead("source\cfml\plugins\css\style.css"); // assets require a login
 </cfscript>
-<form action="?action=login" method="POST" class="login">
-	<fieldset style="border: 1px solid black; padding: 20px; max-width: 400px;">
-		<legend>Login</legend>
-		<cfif len(variables.login_error)>
-			<cfoutput>
+	<cfoutput>
+	<style>
+		#style#
+	</style>
+	<form action="?action=login" method="POST" class="login">
+		<fieldset style="border: 1px solid black; padding: 20px; max-width: 400px;">
+			<legend>Login</legend>
+			<cfif len(variables.login_error)>
 				<div style="color:red;padding-bottom:20px;">#variables.login_error#</div>
-			</cfoutput>
-		</cfif>
-		Login using Lucee Server Password<br>
-		<input name="password" type="password" size="15">
-		<input type="submit" value="Login">
-	</fieldset>
-</form>
+			</cfif>
+			Login using Lucee Server Admin Password<br>
+			<input name="password" type="password" size="15" id="password">
+			<input type="submit" value="Login">
+		</fieldset>
+	</form>
+	<script>
+		document.getElementById("password").focus();
+	</script>
+</cfoutput>

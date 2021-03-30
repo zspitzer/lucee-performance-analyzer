@@ -68,10 +68,11 @@ component hint="various rendering related files"{
 		if ( structCount( warnMissingLang ) eq 0 )
 			return;
 		var missing = [];
-		for (var k in arguments.missingLang)
+		for ( var k in arguments.missingLang )
 			missing.append( "console.warn('missing language string: [#JSStringFormat( k )#] from cfml');" );
-
-		writeOutput( "<script>#ArrayToList( missing, Chr( 10 ) )#</script>" );
+		if ( ArrayLen( missing ) ){
+			writeOutput( "<script>#ArrayToList( missing, Chr( 10 ) )#</script>" );
+		}
 	}
 
 	public void function returnAsset( required string asset ) {

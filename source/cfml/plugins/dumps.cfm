@@ -9,7 +9,7 @@
 <cfsavecontent variable="local.body">
 	<tbody>
 	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-		<tr>
+		<tr class="#altRow( local.q.currentRow )#">
 			<td>#local.q.output#</td>
 			#renderTemplateLink( arguments.req, local.q.template )#
 			<td>#local.q.line#</td>

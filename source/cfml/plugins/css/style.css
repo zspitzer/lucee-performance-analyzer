@@ -1,3 +1,28 @@
+
+.maintbl td, .maintbl th {
+	font-weight: normal;
+	empty-cells: show;
+	border: 1px solid #fff;
+}
+
+body, td, th {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size : 12px;
+	color:#333;
+}
+
+table {empty-cells:show; border-collapse: collapse;}
+td, th {
+	padding: 4 4 4 4;
+	vertical-align:top;
+}
+th {/* like .tblHead */
+	background-color:#39c; /* ABC */
+	color:#efede5;
+	font-weight:normal;
+	text-align:left;
+}
+
 th a {
 	color: inherit;
 	text-decoration: underline;
@@ -11,6 +36,14 @@ th a {
 .toolbar-file-filter, .toolbar-file-filter a {
 	padding-right: 3px;
 	text-decoration: none;
+}
+
+.toolbar-file-filter H3, .toolbar-file-filter H1 {
+	margin: 2 0;
+}
+
+hr {
+	margin: 2;
 }
 
 .log-totals TD {
@@ -46,4 +79,13 @@ a {
 
 .alt-row {
 	background-color: #DFDFDF;
+}
+
+.header H1 {
+	margin-bottom:2px;
+	font-size: 1.5em;
+}
+
+.header {
+	padding-bottom:12px;
 }

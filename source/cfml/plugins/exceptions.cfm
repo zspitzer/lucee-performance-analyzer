@@ -8,8 +8,8 @@
 
 <cfsavecontent variable="local.body">
 	<tbody>
-	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-		<tr>
+	<cfoutput query="local.q" maxrows="#arguments.req.maxrows#">
+		<tr class="#altRow( local.q.currentRow )#">
 			<td>#local.q._type#</td>
 			<td>#local.q.message#</td>
 			<td>#local.q.detail#</td>
