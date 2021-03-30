@@ -9,7 +9,6 @@
 	param name="url.xhr" default="false";
 	variables.plugin = new source.cfml.plugins.Action(lang={},app={});
 
-
 	request.action = ListLast(url.pluginAction,"/\/");
 	savecontent variable="body"{
 		switch (request.action){

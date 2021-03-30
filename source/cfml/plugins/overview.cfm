@@ -1,1 +1,1 @@
-<cflocation url="?action=#req.action#&plugin=#req.plugin#&pluginAction=logs" addToken="false">
+<cflocation url="?action=#req.action#&plugin=#req.plugin#&pluginAction=analysis" addToken="false">

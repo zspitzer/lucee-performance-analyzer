@@ -1,6 +1,7 @@
 <cfscript>
     param name="arguments.req.template" default ="";
 	param name="arguments.req.url" default ="";
+	param name="request.subtitle" default="";
 	local.subTitle = request.subtitle; //stash
 	local.timer = getTickCount();
 	local.related = 0;
