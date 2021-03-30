@@ -11,20 +11,35 @@ Supports Lucee 5.2.8.50 and later
 
 ## Install
 
+### Lucee Administrator as an Admin Plugin / Extension
+
 Install via Applications page in your Lucee Administrator. It's best to install under the Web Administrator, once [this bug/patch](https://luceeserver.atlassian.net/browse/LDEV-2791) against Lucee is merged, you will be able to install the plugin once at the Server level and then access the plugin from all web contexts. After installing the plugin restart Lucee to make the plugin accessible to your Lucee Server/Web Administrator. 
+
+### Standalone Install  (new!)
+
+Checkout the code into a folder and you can run it without having the Lucee Administrator enabled.
+
+Just login with your Lucee Server Admin password, currently still requires debugging to be already enabled.
 
 ## Usage
 
 You will need to enable debugging and configure a debug template in order to capture debug logs for this plugin to work. To enable debugging log into Lucee Administrator, click in the "Debugging" section on "Settings" and enable "Database Activity" with "Query Usage", "Exceptions", "Timer" and "Implicit variable Access". Then make sure to populate the debugging log by navigating/opening a cfml page with your browser, e.g. http://localhost:8888/index.cfm. After this you'll be able to see the collected information in the "Performance Analyzer" section in the Lucee Web Administrator of that web context. 
 
 ## Features
+- Overall Analysis Report
+- Filter by Path or URL
 - Top variable Scoping problems Report
 - Slowest SQL queries Report
 - Slowest Templates / Functions Report
-- Aggregate Timers Report
+- Unused Templates Report
+- Aggregate Aborts Report
+- Aggregate Dumps Report
 - Aggregate Exceptions Report
+- Aggregate Timers Report
+- Aggregate Traces Report
 - Lucee Thread Report
 - Memory Report by Application / Session
+- All tables are sortable, just click any header
 
 ## Building
 The Build process uses [Apache Ant](https://ant.apache.org/) 
