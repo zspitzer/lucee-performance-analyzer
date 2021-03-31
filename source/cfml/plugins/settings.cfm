@@ -26,7 +26,7 @@
 			maxLogs="#form.maxLogs#"
 			remoteClients="";
 
-		echo("<b>Debug Settigns updated!</b><br>");
+		echo("<b>Debug Settings were updated!</b><br>");
 	}
 
 	admin
