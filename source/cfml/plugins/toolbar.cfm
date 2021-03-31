@@ -4,7 +4,7 @@
 	variables.template = arguments.req.template;
 	variables.req = arguments.req;
 
-	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads"];
+	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads", "Settings"];
 	if ( Len( arguments.req.template ) || Len( arguments.req.url ) )
 		ArrayPrepend(local.reports, "Analysis");
 	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces"];
