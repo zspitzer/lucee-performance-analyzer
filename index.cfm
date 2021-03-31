@@ -16,6 +16,8 @@
 				sessionInvalidate();
 				location url="index.cfm" addtoken="false";
 			case "login":
+				if (cgi.REQUEST_URL does not contain "/index.cfm")
+					location url="index.cfm" addtoken="false";
 				cfinclude(template="login.cfm");
 				break;
 			default:
