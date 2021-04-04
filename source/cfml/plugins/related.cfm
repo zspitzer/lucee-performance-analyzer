@@ -5,7 +5,7 @@
 	local.subTitle = request.subtitle; //stash
 	local.timer = getTickCount();
 	local.related = 0;
-	arguments.req.maxrows = 50;
+	arguments.req.maxrows = 25;
 
 	loop array="#path_reports#" item="local.report"{
 		if ( report neq arguments.req.pLuginAction ){

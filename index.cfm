@@ -9,23 +9,23 @@
 	param name="url.xhr" default="false";
 	variables.plugin = new source.cfml.plugins.Action(lang={},app={});
 
-	request.action = ListLast(url.pluginAction,"/\/");
+	request.action = ListLast( url.pluginAction, "/\/" );
 	savecontent variable="body"{
-		switch (request.action){
+		switch ( request.action ){
 			case "logout":
 				sessionInvalidate();
 				location url="index.cfm" addtoken="false";
 			case "login":
-				if (cgi.REQUEST_URL does not contain "/index.cfm")
+				if ( cgi.REQUEST_URL does not contain "/index.cfm" )
 					location url="index.cfm" addtoken="false";
-				cfinclude(template="login.cfm");
+				cfinclude( template="login.cfm" );
 				break;
 			default:
-				if (StructKeyExists(variables.plugin, request.action))
-					variables.plugin[request.action](lang={}, app={}, req=url);
-				if (!url.xhr)
-					variables.plugin.getRenderUtils().includeJavascript("jquery-3.6.0.slim.min");
-				variables.plugin._display(template=request.action & ".cfm", lang={}, app={}, req=url);
+				if ( StructKeyExists( variables.plugin, request.action ) )
+					variables.plugin[ request.action ]( lang={}, app={}, req=url );
+				if ( !url.xhr )
+					variables.plugin.getRenderUtils().includeJavascript( "jquery-3.6.0.slim.min" );
+				variables.plugin._display( template=request.action & ".cfm", lang={}, app={}, req=url );
 		}
 	}
 </cfscript>
@@ -41,10 +41,10 @@
 <body>
 <cfoutput>
 	<div class="header">
-	<h1>Lucee Performance Analyzer (standalone)</h1>
-		Version #request.version# / Lucee #server.lucee.version#
+	<h1>Lucee Performance Analyzer (standalone) #request.version#</h1>
+		Lucee #server.lucee.version# / #UCFirst( request.adminType )# / <a href="/lucee/admin/server.cfm" target="_blank">Lucee Admin</a>
 		<cfif request.action neq "login">
-			<a href="?pluginAction=logout">Logout</a>
+			/ <a href="?pluginAction=logout">Logout</a>
 		</cfif>
 	</div>
 	<div class="content">

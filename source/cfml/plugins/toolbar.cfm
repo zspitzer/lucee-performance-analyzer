@@ -107,8 +107,9 @@
 			<cfloop collection="#local.urlFragments#" key="local.u" value="local.v">
 				<a href="#local.baseUrl#&template=#UrlEncodedFormat( path )#&url=#urlEncodedFormat( local.u )#" style="color:black;"
 					title="Filter by Request URL: #EncodeForHtml(local.u)#">
-					#encodeForHtml( local.v )#
+					#delim# #encodeForHtml( local.v )#
 				</a>
+				<cfset delim="/">
 			</cfloop>
 			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove URL Filter">(clear)</a>
 		</h3>
