@@ -1,6 +1,6 @@
 <cfscript>
 	param name="arguments.req.maxrows" default="1000";
-	local.timers = variables.Perf.getLogs(arguments.req, "timers");
+	local.timers = this.Perf.getLogs(arguments.req, "timers");
 	local.q = timers.q;
 	local._total_time = 0;
 	local._total_executions = 0;

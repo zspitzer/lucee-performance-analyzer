@@ -4,7 +4,7 @@ component {
 	this.filtered = false;
 	variables.cfquery ="";
 
-	public function init (){
+	public void function init (){
 		admin action="getLoggedDebugData"
 			type="#request.adminType#"
 			password="#session["password"&request.adminType]#"
@@ -12,23 +12,23 @@ component {
 		timer label="prepare Logs" {
 			loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
 				if ( !StructKeyExists( this.debugLogs[i], "scope" ) )
-					this.debugLogs[i].scope.cgi = local.log.cgi;// pre 5.3++
+					this.debugLogs[ i ].scope.cgi = local.log.cgi; // pre 5.3++
 				if ( !StructKeyExists( this.debugLogs[i], "size" ) )
-					this.debugLogs[i].size = SizeOf(this.debugLogs[i]); // expensive, do it once (cheeky, debug logs are writeable)
-				this.debugLogsIndex[this.debugLogs[i].id] = i;
+					this.debugLogs[ i ].size = SizeOf( this.debugLogs[i] ); // expensive, do it once (cheeky, debug logs are writeable)
+				this.debugLogsIndex[ this.debugLogs[i].id ] = i;
 			}
 		}
 		if (IsNull(this.debugLogs))
 			this.debugLogs = [];
 	}
 
-	public function purgeLogs(){
+	public void function purgeLogs(){
 		try {
 			admin action="purgeDebugPool"
 				type="#request.adminType#"
 				password="#session["password"&request.adminType]#";
 			this.debugLogs = [];
-		} catch (e){
+		} catch ( e ){
 			```
 				<cfoutput>
 					<b>Sorry, Purge logs failed, it was added in Lucee 5.3.8.80 (this is #server.lucee.version#)</b>
@@ -39,7 +39,7 @@ component {
 		}
 	}
 
-	public function splitUrl(requestUrl){
+	public struct function splitUrl( requestUrl ){
 		var frags = [=]; // ordered
 		var offset = 0;
 		var str = "";
@@ -52,24 +52,24 @@ component {
 			var f = Mid( arguments.requestUrl, 1, singleSlash );
 			frags[f] = f;
 			offset = singleSlash + 1;
-			if (len(arguments.requestUrl) gt offset){
+			if ( len( arguments.requestUrl ) gt offset){
 				if (qs gt 0){
-					str = Mid(arguments.requestUrl, offset, qs-offset);
+					str = Mid( arguments.requestUrl, offset, qs-offset );
 				} else {
-					str = Mid(arguments.requestUrl, offset);
+					str = Mid( arguments.requestUrl, offset );
 				}
 
-				if (len(str) gt 0){
+				if ( Len(str) gt 0 ){
 					loop list="#str#" item="folder" delimiters="/" {
 						f = f & folder;
-						frags[f] = folder;
+						frags[ f ] = folder;
 					}
 				}
 			}
 
 		}
-		if (qs gt 0){
-			frags[arguments.requestUrl] = Mid(arguments.requestUrl, qs);
+		if ( qs gt 0 ){
+			frags[ arguments.requestUrl ] = Mid( arguments.requestUrl, qs );
 		}
 		/*
 		dump(local);
@@ -80,27 +80,32 @@ component {
 
 	};
 
-	public function getHost(requestUrl){
-		local.doubleSlash = find( "//", arguments.requestUrl );
-		if (doubleSlash gte 0){
-			local.singleSlash = find( "/", arguments.requestUrl, doubleSlash + 2 );
-			if (singleSlash gt 0)
+	public string function getHost( string requestUrl ){
+		local.doubleSlash = Find( "//", arguments.requestUrl );
+		if ( doubleSlash gte 0 ){
+			local.singleSlash = Find( "/", arguments.requestUrl, doubleSlash + 2 );
+			if ( singleSlash gt 0 )
 				return Mid( arguments.requestUrl, 1, singleSlash );
 		}
 		return arguments.requestUrl;
 	}
 
-	public function getLog(string logId){
+	public struct function getLog( string logId ){
 		return this.debugLogs[ this.debugLogsIndex[ arguments.logId ] ];
 	}
 
-	public function getLogs(struct req={}, string logType=""){
+	public struct function getLogs(struct req={}, string logType=""){
 		var reqUrl = arguments.req?.url?: "";
 		var reqTemplate = arguments.req?.template?: "";
-		if ( IsNull(reqUrl) && logType == ""){
+		var reqLog = arguments.req?.log?: "";
+		if ( IsNull( reqUrl ) && logType == ""){
 			return local.debugLogs;
 		} else {
-			if (len(reqUrl) gt 0){
+			if ( len( reqLog ) gt 0 ){
+				local.logs = this.debugLogs.filter(function(row){
+					return arguments.row.id eq reqLog;
+				});
+			} else if ( len( reqUrl ) gt 0 ){
 				timer label="logs filter reqUrl(#reqUrl#)" {
 					local.logs = this.debugLogs.filter(function(row){
 						return arguments.row.scope.cgi.REQUEST_URL contains variables.reqUrl;
@@ -109,52 +114,61 @@ component {
 			} else {
 				local.logs = this.debugLogs;
 			}
-			return getFilteredLogs(logs, reqTemplate, arguments.logType);
+
+			// hide performance analyzer
+			if (true){
+				var perfUrl = ListFirst( cgi.REQUEST_URL, "?" );
+				local.logs = local.logs.filter(function(row){
+					return arguments.row.scope.cgi.REQUEST_URL does not contain variables.perfUrl;
+				});
+			}
+
+			return getFilteredLogs( logs, reqTemplate, arguments.logType );
 		}
 	}
 
-	public function getRawLogCount(){
+	public numeric function getRawLogCount(){
 		return ArrayLen( this.debugLogs );
 	}
 
-	public function getDebugMemUsage(){
+	public string function getDebugMemUsage(){
 		local.s = 0;
 		loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
 			local.s += this.debugLogs[local.i].size;
 		}
-		return DecimalFormat(local.s/1024/1024) & " Mb";
+		return DecimalFormat( local.s / 1024 / 1024 ) & " Mb";
 	}
 
-	function getFilteredLogs(logs, reqTemplate, logType){
+	public struct function getFilteredLogs( logs, reqTemplate, logType ){
 		local.q = false;
 		timer label="getFilteredLogs:#arguments.logType#" {
 			switch (arguments.logType){
 				case "timers":
-					local.result = getTimers(arguments.logs);
+					local.result = getTimers( arguments.logs );
 					break;
 				case "pages":
-					local.result = getPages(arguments.logs);
+					local.result = getPages( arguments.logs );
 					break;
 				case "exceptions":
-					local.result = getExceptions(arguments.logs);
+					local.result = getExceptions( arguments.logs );
 					break;
 				case "scopes":
-					local.result = getScopes(arguments.logs);
+					local.result = getScopes( arguments.logs );
 					break;
 				case "queries":
-					local.result = getQueries(arguments.logs);
+					local.result = getQueries( arguments.logs );
 					break;
 				case "logs":
-					local.result = getDebugLogs(arguments.logs);
+					local.result = getDebugLogs( arguments.logs );
 					break;
 				case "dumps":
-					local.result = getDumps(arguments.logs);
+					local.result = getDumps( arguments.logs );
 					break;
 				case "aborts":
-					local.result = getAborts(arguments.logs);
+					local.result = getAborts( arguments.logs );
 					break;
 				case "traces":
-					local.result = getTraces(arguments.logs);
+					local.result = getTraces( arguments.logs );
 					break;
 				default:
 					throw "write code zac! [#arguments.logType#]";
@@ -165,7 +179,7 @@ component {
 		if ( len( arguments.reqTemplate ) gt 0 ){
 			this.reqTemplate = arguments.reqTemplate;
 			timer label="query.filter reqTemplate(#arguments.reqTemplate#)"{
-				local.result.q = local.result.q.filter(function(row){
+				local.result.q = local.result.q.filter( function( row ){
 					return arguments.row.template contains this.reqTemplate;
 				});
 			}
@@ -176,15 +190,15 @@ component {
 
 	// TODO since
 
-	function getTimers(logs){
+	public struct function getTimers( required array logs ){
 		var q_timers = QueryNew( "label,time,executions,template,line,requestUrl" );
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
 			if ( structKeyExists( local.log, "timers") ){
 				local.timers = local.log.timers;
 				loop query="#local.timers#" {
-					local.r = queryAddRow( q_timers, queryRowData( local.timers, local.timers.currentrow) );
-					QuerySetCell(q_timers, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					local.r = queryAddRow( q_timers, queryRowData( local.timers, local.timers.currentrow ) );
+					QuerySetCell( q_timers, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
@@ -202,7 +216,7 @@ component {
 		};
 	}
 
-	function getPages(logs){
+	public struct function getPages( required array logs ){
 		var q = QueryNew('id,count,min,max,avg,app,load,query,total,src,template,requestUrl');
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
@@ -210,8 +224,8 @@ component {
 				local.pages=local.log.pages;
 				loop query="#local.pages#" {
 					local.r = queryAddRow( q, queryRowData( local.pages, local.pages.currentrow ) );
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
-					QuerySetCell(q, "template", local.q.src[r], local.r );
+					QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					QuerySetCell( q, "template", local.q.src[r], local.r );
 				}
 			}
 		}
@@ -246,7 +260,7 @@ component {
 		};
 	}
 
-	function getScopes(logs){
+	public struct function getScopes( required array logs ){
 		var q_scopes = QueryNew( "template,line,scope,count,name,requestUrl" );
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
@@ -278,7 +292,7 @@ component {
 		};
 	}
 
-	function getExceptions(logs){
+	public struct function getExceptions( required array logs ){
 		var q = QueryNew( "_type,message,detail,template,line,requestUrl" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
@@ -293,7 +307,7 @@ component {
 					QuerySetCell( local.q, "detail", exp.detail, r );
 					QuerySetCell( local.q, "line", exp.TagContext[1].line, r );
 					QuerySetCell( local.q, "template", exp.TagContext[1].template, r );
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
@@ -310,7 +324,7 @@ component {
 		};
 	}
 
-	function getDumps(logs){
+	public struct function getDumps( required array logs ){
 		var q = QueryNew( "output,template,line,requestUrl" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
@@ -319,8 +333,8 @@ component {
 			if ( StructKeyExists( local.log, "dumps" ) ){
 				local.dumps = local.log.dumps;
 				loop query="#local.dumps#"{
-					local.r = queryAddRow(q, queryRowData(local.dumps, local.dumps.currentrow));
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					local.r = QueryAddRow( q, QueryRowData( local.dumps, local.dumps.currentrow ) );
+					QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
@@ -339,7 +353,7 @@ component {
 	//KeyConstants._type, KeyConstants._category, KeyConstants._text, KeyConstants._template, KeyConstants._line,
 			//KeyConstants._action, KeyConstants._varname, KeyConstants._varvalue, KeyConstants._time
 
-	function getTraces(logs){
+	public struct function getTraces( required array logs ){
 		var q = QueryNew( "type,category,text,template,line,action,var,varValue,time,requestUrl" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
@@ -348,8 +362,8 @@ component {
 			if ( StructKeyExists( local.log, "traces" ) ){
 				local.traces = local.log.traces;
 				loop query="#local.traces#"{
-					local.r = queryAddRow(q, queryRowData(local.traces, local.traces.currentrow));
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					local.r = QueryAddRow( q, queryRowData(local.traces, local.traces.currentrow ) );
+					QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
@@ -366,7 +380,7 @@ component {
 		};
 	}
 
-	function getAborts(logs){
+	public struct function getAborts( required array logs ){
 		var q = QueryNew( "template,line,requestUrl" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
@@ -374,10 +388,10 @@ component {
 			// if exceptions isn't enabled in debug settings, there won't be data
 			if ( StructKeyExists( local.log, "abort" ) ){
 				local.abort = local.log.abort;
-				local.r = queryAddRow(q);
-				QuerySetCell(q, "template", local.abort.template, r );
-				QuerySetCell(q, "line", local.abort.line, r );
-				QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+				local.r = QueryAddRow( q );
+				QuerySetCell( q, "template", local.abort.template, r );
+				QuerySetCell( q, "line", local.abort.line, r );
+				QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 			}
 		}
 		```
@@ -393,18 +407,18 @@ component {
 		};
 	}
 
-	function getQueries(logs){
-		var q = QueryNew("name,time,sql,src,line,count,datasource,usage,cacheType,requestUrl,template" );
+	public struct function getQueries( required array logs ){
+		var q = QueryNew( "name,time,sql,src,line,count,datasource,usage,cacheType,requestUrl,template" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
 			// if queries isn't enabled in debug settings, there won't be data
-			if (structKeyExists(local.log, "queries")){
+			if ( StructKeyExists( local.log, "queries" ) ){
 				local.queries=local.log.queries;
 				loop query="#local.queries#" {
-					local.r = queryAddRow(q, queryRowData(local.queries, local.queries.currentrow));
-					QuerySetCell(q, "template", local.q.src[r], r );
-					QuerySetCell(q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					local.r = QueryAddRow( q, QueryRowData(local.queries, local.queries.currentrow) );
+					QuerySetCell( q, "template", local.q.src[r], r );
+					QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
 		}
@@ -429,7 +443,7 @@ component {
 		};
 	}
 
-	function getDebugLogs(logs){
+	public struct function getDebugLogs( required array logs ){
 		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size" );
 		local.totals = {
 			app = 0,

@@ -4,11 +4,11 @@
 	param name="arguments.req.doPurge" default ="false";
 
 	if (arguments.req.doPurge)
-		variables.Perf.purgeLogs();
+		this.Perf.purgeLogs();
 
 	setTitle( "Debugging Logs" );
 	local.midnight = CreateDate( Year( Now() ), Month( Now() ), Day( Now() ) ); // hide todays date
-	local.logs = variables.Perf.getLogs(arguments.req, "logs");
+	local.logs = this.Perf.getLogs(arguments.req, "logs");
 	local.q = logs.q;
 	local.baseUrl = "?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#";
 </cfscript>
@@ -19,16 +19,14 @@
 		<cfoutput>
 			<cfif arguments.req.consoleDump>
 				<script>
-					console.log( "#JsStringFormat(q.requestUrl)#", #SerializeJson( variables.perf.getLog( q.id ) )# );
+					console.log( "#JsStringFormat(q.requestUrl)#", #SerializeJson( this.Perf.getLog( q.id ) )# );
 				</script>
 			</cfif>
 			<tr class="#altRow( local.q.currentRow )#">
-				<td><a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">
-					#renderRequestLink( arguments.req, local.q.path )#
-				<a></td>
+				<td>#renderRequestLink( arguments.req, local.q.path, local.q.id )#</td>
 				<td>
-				<a href="?action=debugging.logs&action2=detail&id=#hash(local.q.id&":"&local.q.startTime)#" title="view single debug log">Raw Log</a>,&nbsp;
-				<cfset local.host = variables.perf.getHost(q.requestUrl)>
+				<a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">By Url</a>,&nbsp;
+				<cfset local.host = this.Perf.getHost(q.requestUrl)>
 				<a href="#local.baseUrl#&url=#urlEncodedFormat(host)#" title="Filter by Host: #encodeForHtml(host)#">By Host<a></td>
 				<td data-value=#DateDiff( 's', "2000-1-1", local.q.starttime )#>
 				<cfif DateCompare( local.q.starttime, local.midnight ) eq -1>

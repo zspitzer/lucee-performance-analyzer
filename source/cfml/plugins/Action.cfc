@@ -24,41 +24,41 @@
  */
 component extends="lucee.admin.plugin.Plugin" {
 
-	public void function init(required struct lang, required struct app) {
-		variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );
+	public void function init( required struct lang, required struct app ) {
+		variables.renderUtils = new RenderUtils( arguments.lang, action( "asset" ), this.action );
 		variables._lang = arguments.lang;
-		setting showdebugoutput="true";
+		setting showdebugoutput = "true";
 	}
 
-	public function getRenderUtils(){
+	RenderUtils public function getRenderUtils(){
 		return variables.renderUtils;
 	}
 
-	public void function _display(required string template, required struct lang, required struct app, required struct req) {
+	public void function _display( required string template, required struct lang, required struct app, required struct req ) {
 		param name="url.xhr" default="false";
 		request._missing_lang = {};
 		var cfquery = ""; // var scoping
 		request.title = "Perf Analyzer";
 		if ( not url.xhr)
-			variables.renderUtils.includeCSS("style");
-		variables.perf = new Perf();
-		cfinclude(template="toolbar.cfm");
+			variables.renderUtils.includeCSS( "style" );
+		this.perf = new Perf();
+		cfinclude( template="toolbar.cfm" );
 
-		cfinclude(template=arguments.template);
+		cfinclude( template=arguments.template );
 
-		cfinclude(template="footer.cfm");
+		cfinclude( template="footer.cfm" );
 		//variables.renderUtils.warnMissingLang(request._missing_lang);
 	}
 
-	public function asset(struct lang, struct app, struct req) output=false {
+	public void function asset(struct lang, struct app, struct req) output=false {
 		param name="arguments.req.asset";
 		// dunno why, sometimes this doesn't exist and throws an error
 		if (not structKeyExists(variables, "renderUtils") )
-			variables.renderUtils = new RenderUtils(arguments.lang, action("asset"), this.action );
-		variables.renderUtils.returnAsset(url.asset);
+			variables.renderUtils = new RenderUtils( arguments.lang, action( "asset" ), this.action );
+		variables.renderUtils.returnAsset( arguments.req.asset );
 	}
 
-	public function getLang(struct lang, struct app, struct req) output=false {
-		url.xhr=true;
+	public void function getLang( struct lang, struct app, struct req ) output=false {
+		url.xhr = true;
 	}
 }

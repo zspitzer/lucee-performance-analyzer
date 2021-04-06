@@ -2,7 +2,7 @@
 	request.self = ListFirst(cgi.REQUEST_URL,"?") &"?action=Plugin";
 	url.action = "Plugin";
 	url.plugin = "PerformanceAnalyzer";
-	request.version = DeserializeJson(FileRead("box.json")).version;
+	request.version = DeserializeJson(FileRead(ExpandPath(".\box.json"))).version;
 	request.subtitle = "";
 	request.title = "Lucee Performance Analyzer - #request.version#";
 	param name="url.pluginAction" default="analysis";

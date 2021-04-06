@@ -1,6 +1,6 @@
 <cfscript>
 	param name="arguments.req.maxrows" default ="100";
-	local.scopes = variables.Perf.getLogs(arguments.req, "scopes");
+	local.scopes = this.Perf.getLogs(arguments.req, "scopes");
 	local.q = local.scopes.q;
 	local.src_rows = local.q.recordcount
 	setTitle( "Variable Scoping Problems");

@@ -1,7 +1,7 @@
 <cfscript>
 	param name="arguments.req.maxrows" default="1000";
 	local._total_dumps = 0;
-	local.dumps = variables.Perf.getLogs(arguments.req, "dumps");
+	local.dumps = this.Perf.getLogs(arguments.req, "dumps");
 	local.q = local.dumps.q
 	setTitle( "Dumps" );
 </cfscript>

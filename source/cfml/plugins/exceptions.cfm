@@ -1,7 +1,7 @@
 <cfscript>
 	param name="arguments.req.maxrows" default="1000";
 	local._total_executions = 0;
-	local.exceptions = variables.Perf.getLogs(arguments.req, "exceptions");
+	local.exceptions = this.Perf.getLogs(arguments.req, "exceptions");
 	local.q = local.exceptions.q
 	setTitle( "Exceptions" );
 </cfscript>

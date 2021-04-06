@@ -1,7 +1,7 @@
 <cfscript>
 	param name="arguments.req.maxrows" default="1000";
 	local._total_aborts = 0;
-	local.traces = variables.Perf.getLogs(arguments.req, "traces");
+	local.traces = this.Perf.getLogs(arguments.req, "traces");
 	local.q = local.traces.q
 	setTitle( "Traces" );
 </cfscript>

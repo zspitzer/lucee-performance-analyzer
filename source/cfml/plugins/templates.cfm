@@ -2,7 +2,7 @@
 	param name="arguments.req.template" default ="";
 	param name="arguments.req.maxrows" default ="100";
 	setTitle("Slowest Templates");
-	local.pages = variables.Perf.getLogs(arguments.req, "pages");
+	local.pages = this.Perf.getLogs(arguments.req, "pages");
 	local.q = local.pages.q;
 </cfscript>
 

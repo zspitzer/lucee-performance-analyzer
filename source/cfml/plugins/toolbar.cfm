@@ -1,11 +1,12 @@
 <cfscript>
 	param name="arguments.req.template" default ="";
 	param name="arguments.req.url" default ="";
+	param name="arguments.req.log" default ="";
 	variables.template = arguments.req.template;
 	variables.req = arguments.req;
 
 	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads", "Settings"];
-	if ( Len( arguments.req.template ) || Len( arguments.req.url ) )
+	if ( Len( arguments.req.template ) || Len( arguments.req.url ) || Len( arguments.req.log ) )
 		ArrayPrepend(local.reports, "Analysis");
 	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces"];
 	local.lastLogDate = now();
@@ -16,6 +17,8 @@
 		urlExtra = urlExtra & "&template=" & urlEncodedFormat( arguments.req.template );
 	if ( Len( arguments.req.url ) )
 		urlExtra = urlExtra & "&url=" & urlEncodedFormat( arguments.req.url );
+	if ( Len( arguments.req.log ) )
+		urlExtra = urlExtra & "&log=" & urlEncodedFormat( arguments.req.log );
 
 	local.cfquery = ""; // hide from scopes
 	request.title = "Performance Analyzer";
@@ -24,17 +27,17 @@
 	if ( variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
 		variables.exactTemplatePath = false;
 
-	function renderRequestLink ( req, linkTemplate ){
+	void function renderRequestLink ( req, linkTemplate, logId ){
 		var temp = arguments.linkTemplate;
 		if (len( arguments.req.url ) gt 0 and find( arguments.req.url, arguments.linkTemplate, 1 ) eq 1)
 			temp = mid( arguments.linkTemplate, len( arguments.req.url ) + 1 );
-		echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#'
-			& '&url=#urlEncodedFormat(arguments.linkTemplate)#"'
-			& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>');
+		echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=Analysis'
+			& '&log=#urlEncodedFormat(arguments.logId)#"'
+			& 'title="show only problems from this request" class="toolbar-filter">#htmleditformat( temp )#</a>');
 
 	}
 
-	function renderTemplateLink ( req, reqPath ){
+	void function renderTemplateLink ( req, reqPath ){
 		var temp = arguments.reqPath;
 		if (len( arguments.req.template ) gt 0 and find( arguments.req.template, arguments.reqPath, 1 ) eq 1)
 			temp = mid( arguments.reqPath, len( arguments.req.template ) + 2 );
@@ -47,29 +50,29 @@
 		}
 	}
 
-	function renderTemplateHead(){
+	void function renderTemplateHead(){
 		if ( !variables.exactTemplatePath )
 			echo( '<th data-type="text">Template</th>' );
 	};
 
-	function hasTemplates(){
+	boolean function hasTemplates(){
 		return variables.exactTemplatePath ? 0 : 1;
 	};
 
-	function setTitle(title){
+	void function setTitle(title){
 		var t = ListFirst( ListLast( GetCurrentTemplatePath(), "\/" ), "." );
 		if ( variables.req.pluginAction eq t )
 			echo( "<h3>#arguments.title#</h3>" );
 		request.subtitle = arguments.title;
 	}
 
-	function altRow(currentrow){
+	string function altRow(currentrow){
 		if ( arguments.currentRow mod 2 eq 1 )
 			return "alt-row";
 		return "zzz";
 	}
 
-	function prettyTime( n ){
+	string function prettyTime( n ){
 		if ( arguments.n == 0 )
 			return "";
 		 var s = arguments.n / ( 1000 * 1000 );
@@ -78,7 +81,7 @@
 		return NumberFormat( s );
 	}
 
-	function prettyNum( n=0, large=false ){
+	string function prettyNum( n=0, boolean large=false ){
 		if ( arguments.n == 0 )
 			return "";
 
@@ -92,13 +95,24 @@
 	local.baseUrl = "?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#";
 </cfscript>
 
+<cfif len( arguments.req.log )>
+	<cfoutput>
+		<span class="toolbar-file-filter">
+		<h3>Request Log: #arguments.req.log#
+			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove URL Filter">(clear)</a>
+		</h3>
+		</span>
+		<hr>
+	</cfoutput>
+</cfif>
+
 <cfif len( arguments.req.url )>
 	<cfscript>
 		local.delim = "";
 		local.offset = 0;
 		local.pLen = listLen( arguments.req.url, "/" );
 		local.p = 0;
-		local.urlFragments = variables.Perf.splitUrl(arguments.req.url);
+		local.urlFragments = this.Perf.splitUrl(arguments.req.url);
 		//dump(local.urlFragments);
 	</cfscript>
 	<cfoutput>

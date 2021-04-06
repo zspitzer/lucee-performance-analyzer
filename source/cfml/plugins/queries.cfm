@@ -1,6 +1,6 @@
 <cfscript>
 	param name="arguments.req.maxrows" default ="1000";
-	local.queries = variables.Perf.getLogs(arguments.req, "queries");
+	local.queries = this.Perf.getLogs(arguments.req, "queries");
 	local.q = queries.q
 	setTitle("Slowest Queries");
 </cfscript>

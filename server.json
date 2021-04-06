@@ -1,0 +1,13 @@
+{
+    "jvm":{
+        "args":"-Djava.net.useSystemProxies=true"
+    },
+    "app":{
+        "cfengine":"lucee@5.3.8-SNAPSHOT+162",
+        "serverHomeDirectory":"../lucee-perf-analzyer-server"
+    },
+    "http":{
+        "port":49215
+    },
+    "openBrowserURL":"http://perf-analyzer.localhost:49215/index.cfm"
+}
