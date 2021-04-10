@@ -295,9 +295,9 @@ component {
 		<cfquery name="local.q_parts" dbtype="query">
 			select  template, lines, min(_min) as minTime, max(_max) as maxTime, avg(_avg) as avgTime,
 					sum(total) as totalTime, sum(_count) as totalCount,
-					sum(total) as total, count(*) as executions
+					sum(total) as total, count(*) as executions, snippet
 			from	q_parts
-			group by template, lines
+			group by template, lines, snippet
 			order by totalTime desc
 		</cfquery>
 		```

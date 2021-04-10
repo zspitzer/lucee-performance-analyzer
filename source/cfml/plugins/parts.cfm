@@ -25,7 +25,7 @@
 </thead>
 <tbody>
 	<cfoutput query="local.q" maxrows=#arguments.req.maxrows#>
-		<tr class="#altRow(local.q.currentRow)#">
+		<tr class="#altRow(local.q.currentRow)#" title="#encodeForHTMLAttribute(local.q.snippet)#">
 			#renderTemplateLink( arguments.req, local.q.template )#
 			<td align="right">#local.q.lines#</td>
 			<td align="right">#NumberFormat( local.q.totalTime / ( 1000 * 1000 ) )#</td>
