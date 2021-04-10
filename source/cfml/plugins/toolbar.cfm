@@ -6,9 +6,9 @@
 	variables.req = arguments.req;
 
 	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads", "Settings"];
-	if ( Len( arguments.req.template ) || Len( arguments.req.url ) || Len( arguments.req.log ) )
+	//if ( Len( arguments.req.template ) || Len( arguments.req.url ) || Len( arguments.req.log ) )
 		ArrayPrepend(local.reports, "Analysis");
-	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces"];
+	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Parts"];
 	local.lastLogDate = now();
 	local.urlExtra = "";
 	if ( StructKeyExists(arguments.req, "since") and arguments.req.since and isDate(arguments.req.since))
@@ -27,25 +27,30 @@
 	if ( variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
 		variables.exactTemplatePath = false;
 
-	void function renderRequestLink ( req, linkTemplate, logId ){
+	void function renderRequestLink ( required struct req, linkTemplate, logId ){
 		var temp = arguments.linkTemplate;
 		if (len( arguments.req.url ) gt 0 and find( arguments.req.url, arguments.linkTemplate, 1 ) eq 1)
 			temp = mid( arguments.linkTemplate, len( arguments.req.url ) + 1 );
+		if ( Len(temp) eq 0)
+			temp = arguments.linkTemplate;
 		echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=Analysis'
 			& '&log=#urlEncodedFormat(arguments.logId)#"'
 			& 'title="show only problems from this request" class="toolbar-filter">#htmleditformat( temp )#</a>');
 
 	}
 
-	void function renderTemplateLink ( req, reqPath ){
+	void function renderTemplateLink ( required struct req, reqPath ){
 		var temp = arguments.reqPath;
 		if (len( arguments.req.template ) gt 0 and find( arguments.req.template, arguments.reqPath, 1 ) eq 1)
 			temp = mid( arguments.reqPath, len( arguments.req.template ) + 2 );
+		if ( Len(temp) eq 0)
+			temp = arguments.reqPath;
 		if ( !variables.exactTemplatePath ){
 			echo("<td>");
 			echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=#arguments.req.pluginAction#'
 				& '&template=#urlEncodedFormat(arguments.reqPath)#"'
 				& 'title="show only problems from this template" class="toolbar-filter">#htmleditformat( temp )#</a>');
+			//  TODO if (len(singleLog.scope.cgi.http_user_agent) eq 0>Empty, probably a Lucee thread)
 			echo("</td>");
 		}
 	}
@@ -59,20 +64,20 @@
 		return variables.exactTemplatePath ? 0 : 1;
 	};
 
-	void function setTitle(title){
+	void function setTitle( string title ){
 		var t = ListFirst( ListLast( GetCurrentTemplatePath(), "\/" ), "." );
 		if ( variables.req.pluginAction eq t )
 			echo( "<h3>#arguments.title#</h3>" );
 		request.subtitle = arguments.title;
 	}
 
-	string function altRow(currentrow){
+	string function altRow( numeric currentrow ){
 		if ( arguments.currentRow mod 2 eq 1 )
 			return "alt-row";
 		return "zzz";
 	}
 
-	string function prettyTime( n ){
+	string function prettyTime( numeric n ){
 		if ( arguments.n == 0 )
 			return "";
 		 var s = arguments.n / ( 1000 * 1000 );
@@ -81,7 +86,7 @@
 		return NumberFormat( s );
 	}
 
-	string function prettyNum( n=0, boolean large=false ){
+	string function prettyNum( numeric n=0, boolean large=false ){
 		if ( arguments.n == 0 )
 			return "";
 
@@ -101,8 +106,18 @@
 		<h3>Request Log: #arguments.req.log#
 			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove URL Filter">(clear)</a>
 		</h3>
+		<cfset local.singleLog = this.perf.getLog(arguments.req.log )>
+		<cfif StructCount(singleLog)>
+			Url: #encodeForHtml( singleLog.scope.cgi.request_url )#<br>
+			User-Agent: <cfif len(singleLog.scope.cgi.http_user_agent) eq 0>Empty, probably a Lucee thread<cfelse>#encodeForHtml(singleLog.scope.cgi.http_user_agent)#</cfif><br>
+		<cfelse>
+			Log not found?<br>
+		</cfif>
+		<br>
 		</span>
+		<cfdump label="raw debug log" var=#local.singleLog# expand=false>
 		<hr>
+
 	</cfoutput>
 </cfif>
 

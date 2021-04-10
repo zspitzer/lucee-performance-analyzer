@@ -12,9 +12,9 @@ component {
 		timer label="prepare Logs" {
 			loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
 				if ( !StructKeyExists( this.debugLogs[i], "scope" ) )
-					this.debugLogs[ i ].scope.cgi = local.log.cgi; // pre 5.3++
+					this.debugLogs[ i ]["scope"].scope.cgi = local.log.cgi; // pre 5.3++
 				if ( !StructKeyExists( this.debugLogs[i], "size" ) )
-					this.debugLogs[ i ].size = SizeOf( this.debugLogs[i] ); // expensive, do it once (cheeky, debug logs are writeable)
+					this.debugLogs[ i ]["size"] = SizeOf( this.debugLogs[i] ); // expensive, do it once (cheeky, debug logs are writeable)
 				this.debugLogsIndex[ this.debugLogs[i].id ] = i;
 			}
 		}
@@ -54,7 +54,7 @@ component {
 			offset = singleSlash + 1;
 			if ( len( arguments.requestUrl ) gt offset){
 				if (qs gt 0){
-					str = Mid( arguments.requestUrl, offset, qs-offset );
+					str = Mid( arguments.requestUrl, offset, qs - offset );
 				} else {
 					str = Mid( arguments.requestUrl, offset );
 				}
@@ -91,7 +91,12 @@ component {
 	}
 
 	public struct function getLog( string logId ){
-		return this.debugLogs[ this.debugLogsIndex[ arguments.logId ] ];
+		if ( StructKeyExists( this.debugLogsIndex, arguments.logId )
+				&& ArrayIndexExists( this.debugLogs, this.debugLogsIndex[ arguments.logId ]))
+			return this.debugLogs[ this.debugLogsIndex[ arguments.logId ] ];
+		else
+			return {};
+
 	}
 
 	public struct function getLogs(struct req={}, string logType=""){
@@ -116,9 +121,9 @@ component {
 			}
 
 			// hide performance analyzer
-			if (true){
+			if ( application.applicationName eq "lucee-performance-analzyer" ){
 				var perfUrl = ListFirst( cgi.REQUEST_URL, "?" );
-				local.logs = local.logs.filter(function(row){
+				local.logs = local.logs.filter( function( row ){
 					return arguments.row.scope.cgi.REQUEST_URL does not contain variables.perfUrl;
 				});
 			}
@@ -134,7 +139,7 @@ component {
 	public string function getDebugMemUsage(){
 		local.s = 0;
 		loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
-			local.s += this.debugLogs[local.i].size;
+			local.s += this.debugLogs[ local.i ].size;
 		}
 		return DecimalFormat( local.s / 1024 / 1024 ) & " Mb";
 	}
@@ -148,6 +153,9 @@ component {
 					break;
 				case "pages":
 					local.result = getPages( arguments.logs );
+					break;
+				case "parts":
+					local.result = getParts( arguments.logs );
 					break;
 				case "exceptions":
 					local.result = getExceptions( arguments.logs );
@@ -257,6 +265,44 @@ component {
 
 		return {
 			q: q_pages
+		};
+	}
+
+	public struct function getParts( required array logs ){
+		var q = QueryNew('id,count,min,max,avg,total,path,start,end,startLine,endLine,snippet,template,requestUrl,lines');
+		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
+			local.log = arguments.logs[local.i];
+
+			if ( StructKeyExists( local.log, "pageParts" )){
+				local.parts=local.log.pageParts;
+				loop query="#local.parts#" {
+					local.r = queryAddRow( q, queryRowData( local.parts, local.parts.currentrow ) );
+					QuerySetCell( q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+					QuerySetCell( q, "template", local.q.path[r], local.r );
+					QuerySetCell( q, "lines", "#local.q.startline[r]# - #local.q.endline[r]#", local.r );
+				}
+			}
+		}
+		// QoQ doesn't like count
+		```
+		<cfquery name="local.q_parts" dbtype="query">
+
+			select 	id,	count as _count, min as _min, max as _max, avg as _avg,
+					total, path, start, end as _end, startLine, endLine, snippet, template, requestUrl, lines
+			from    q
+		</cfquery>
+
+		<cfquery name="local.q_parts" dbtype="query">
+			select  template, lines, min(_min) as minTime, max(_max) as maxTime, avg(_avg) as avgTime,
+					sum(total) as totalTime, sum(_count) as totalCount,
+					sum(total) as total, count(*) as executions
+			from	q_parts
+			group by template, lines
+			order by totalTime desc
+		</cfquery>
+		```
+		return {
+			q: q_parts
 		};
 	}
 
@@ -422,7 +468,7 @@ component {
 				}
 			}
 		}
-		<!--- Qoq doesn't like count --->
+		// QoQ doesn't like count
 		```
 		<cfquery name="local.q_queries" dbtype="query">
 			select  name, time, sql, src as template, line,	count as total, datasource, cacheType
@@ -444,7 +490,7 @@ component {
 	}
 
 	public struct function getDebugLogs( required array logs ){
-		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size" );
+		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread" );
 		local.totals = {
 			app = 0,
 			query: 0,
@@ -505,6 +551,7 @@ component {
 			QuerySetCell( local.q, "scope", _scope, local.r);
 			QuerySetCell( local.q, "exceptions", _exp, local.r);
 			QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
+			QuerySetCell( local.q, "isThread", ( Len( local.log.scope.cgi.HTTP_USER_AGENT ) eq 0 ), local.r );
 
 			local.totals.size +=  + local.log.size / 1000;
 			local.totals.app += _app;

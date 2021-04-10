@@ -53,9 +53,14 @@
 	//if(fileName!="admin.cfm" && fileName!="web.cfm" && fileName!="server.cfm" && fileName!="index.cfm") {
 	public function onRequestStart() {
 		// if not logged in, we only allow access to admin|web|server[.cfm]
-		if(!structKeyExists(session, "passwordWeb") && !structKeyExists(session, "passwordServer")){
-			var fileName=listLast(cgi.script_name,"/");
-			//if(fileName!="admin.cfm" && fileName!="web.cfm" && fileName!="server.cfm" && fileName!="index.cfm") {
+
+		if ( !StructKeyExists( session, "password" & request.adminType ) ){
+			structDelete( session, "passwordWeb" );
+			structDelete( session, "passwordServer" );
+		}
+
+		if(!structKeyExists( session, "passwordWeb" ) && !structKeyExists( session, "passwordServer" )){
+			var fileName = listLast( cgi.script_name, "/" );
 
 			if (getDirectoryFromPath(ExpandPath(cgi.SCRIPT_NAME)) neq GetDirectoryFromPath(GetCurrentTemplatePath())
 				|| fileName!="index.cfm") {

@@ -128,7 +128,7 @@ component hint="various rendering related files"{
 	}
 
 	public function cleanHtml( required string content ){
-		return ReReplace( arguments.content, "[\r\n]\s*([\r\n]|\Z)", Chr(10), "ALL" )
+		return ReReplace( arguments.content, "[\r\n]\s*([\r\n]|\Z)", Chr(10), "ALL" );
 	}
 
 }

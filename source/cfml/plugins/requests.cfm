@@ -18,12 +18,16 @@
 	<cfloop query="local.q" maxrows="#arguments.req.maxrows#">
 		<cfoutput>
 			<cfif arguments.req.consoleDump>
+				<cfscript>
+					if (!iSJson( SerializeJson( this.Perf.getLog( q.id ) ) ) )
+						throw "json error";
+				</cfscript>
 				<script>
 					console.log( "#JsStringFormat(q.requestUrl)#", #SerializeJson( this.Perf.getLog( q.id ) )# );
 				</script>
 			</cfif>
 			<tr class="#altRow( local.q.currentRow )#">
-				<td>#renderRequestLink( arguments.req, local.q.path, local.q.id )#</td>
+				<td>#renderRequestLink( arguments.req, local.q.path, local.q.id )# <cfif local.q.isThread>(thread)</cfif></td>
 				<td>
 				<a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">By Url</a>,&nbsp;
 				<cfset local.host = this.Perf.getHost(q.requestUrl)>
