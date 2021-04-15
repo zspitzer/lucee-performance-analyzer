@@ -114,4 +114,8 @@
 		</tfoot>
 		</table>
 	</form>
+
+	<p>
+		<b>Please consider making a <a href="https://opencollective.com/Lucee">donation / supporting</a> the Lucee project</b>, so we can make Lucee even better!
+	</p>
 </cfoutput>

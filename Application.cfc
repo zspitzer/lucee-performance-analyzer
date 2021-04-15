@@ -44,7 +44,7 @@
 	request.adminType = "web";
 	try {
 		request.singleMode = getConfigSettings().mode == "single";
-		if ( request.singleMode)
+		if (request.singleMode)
 			request.adminType="server";
 	} catch (e){
 		// lucee 6.0 only

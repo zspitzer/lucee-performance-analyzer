@@ -295,9 +295,9 @@ component {
 		<cfquery name="local.q_parts" dbtype="query">
 			select  template, lines, min(_min) as minTime, max(_max) as maxTime, avg(_avg) as avgTime,
 					sum(total) as totalTime, sum(_count) as totalCount,
-					sum(total) as total, count(*) as executions, snippet
+					sum(total) as total, count(*) as executions, snippet, start, _end
 			from	q_parts
-			group by template, lines, snippet
+			group by template, lines, snippet, start, _end
 			order by totalTime desc
 		</cfquery>
 		```
@@ -490,7 +490,7 @@ component {
 	}
 
 	public struct function getDebugLogs( required array logs ){
-		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread" );
+		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread,statusCode,ContentType,ContentLength" );
 		local.totals = {
 			app = 0,
 			query: 0,
@@ -539,19 +539,26 @@ component {
 
 
 			local.r = QueryAddRow( q );
-			QuerySetCell( local.q, "size", log.size, local.r);
-			QuerySetCell( local.q, "id", log.id, local.r);
-			QuerySetCell( local.q, "starttime", log.starttime, local.r);
-			QuerySetCell( local.q, "template", local.cgi.script_name, local.r);
-			QuerySetCell( local.q, "path", path, local.r);
-			QuerySetCell( local.q, "total", _total, local.r);
-			QuerySetCell( local.q, "query", _query, local.r);
-			QuerySetCell( local.q, "load", _load, local.r);
-			QuerySetCell( local.q, "app", _app, local.r);
-			QuerySetCell( local.q, "scope", _scope, local.r);
-			QuerySetCell( local.q, "exceptions", _exp, local.r);
+			QuerySetCell( local.q, "size", log.size, local.r );
+			QuerySetCell( local.q, "id", log.id, local.r );
+			QuerySetCell( local.q, "starttime", log.starttime, local.r );
+			QuerySetCell( local.q, "template", local.cgi.script_name, local.r );
+			QuerySetCell( local.q, "path", path, local.r );
+			QuerySetCell( local.q, "total", _total, local.r );
+			QuerySetCell( local.q, "query", _query, local.r );
+			QuerySetCell( local.q, "load", _load, local.r );
+			QuerySetCell( local.q, "app", _app, local.r );
+			QuerySetCell( local.q, "scope", _scope, local.r );
+			QuerySetCell( local.q, "exceptions", _exp, local.r );
 			QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 			QuerySetCell( local.q, "isThread", ( Len( local.log.scope.cgi.HTTP_USER_AGENT ) eq 0 ), local.r );
+
+			if ( StructKeyExists( log, "statusCode" ) )
+				QuerySetCell( local.q, "statusCode", log.statusCode, local.r );
+			if ( StructKeyExists( log, "ContentType" ) )
+				QuerySetCell( local.q, "ContentType", log.ContentType, local.r );
+			if ( StructKeyExists( log, "ContentLength" ) )
+				QuerySetCell( local.q, "ContentLength", log.ContentLength, local.r );
 
 			local.totals.size +=  + local.log.size / 1000;
 			local.totals.app += _app;

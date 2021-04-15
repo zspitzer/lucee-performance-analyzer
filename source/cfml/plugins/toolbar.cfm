@@ -5,7 +5,7 @@
 	variables.template = arguments.req.template;
 	variables.req = arguments.req;
 
-	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Memory", "Threads", "Settings"];
+	local.reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Parts", "Memory", "Threads", "Settings"];
 	//if ( Len( arguments.req.template ) || Len( arguments.req.url ) || Len( arguments.req.log ) )
 		ArrayPrepend(local.reports, "Analysis");
 	local.path_reports = ["Requests", "Templates", "Scopes", "Queries", "Timers", "Exceptions", "Dumps", "Aborts", "Traces", "Parts"];
@@ -108,8 +108,41 @@
 		</h3>
 		<cfset local.singleLog = this.perf.getLog(arguments.req.log )>
 		<cfif StructCount(singleLog)>
-			Url: #encodeForHtml( singleLog.scope.cgi.request_url )#<br>
-			User-Agent: <cfif len(singleLog.scope.cgi.http_user_agent) eq 0>Empty, probably a Lucee thread<cfelse>#encodeForHtml(singleLog.scope.cgi.http_user_agent)#</cfif><br>
+			<table>
+			<tr>
+				<td>Url</td>
+				<td><a href="#singleLog.scope.cgi.request_url#" target="blank" rel="noopener">#encodeForHtml( singleLog.scope.cgi.request_url )#</a></td>
+			</tr>
+			<cfif len(singleLog.scope.cgi.http_referer)>
+				<tr>
+					<td>Http Referer</td>
+					<td><a href="#singleLog.scope.cgi.http_referer#" target="blank" rel="noopener">#encodeForHtml( singleLog.scope.cgi.http_referer )#</a></td>
+				</tr>
+			</cfif>
+			<tr>
+				<td>User-Agent</td>
+				<td><cfif len(singleLog.scope.cgi.http_user_agent) eq 0>Empty, probably a Lucee thread<cfelse>#encodeForHtml(singleLog.scope.cgi.http_user_agent)#</cfif></td>
+			</tr>
+			<cfif structKeyExists(singleLog, "StatusCode")>
+				<tr>
+					<td>Status-Code</td>
+					<td><span class="statusCode-#Left(singleLog.statusCode,1)#">#listFirst(singleLog.statusCode," ")#</span></td>
+				</tr>
+			</cfif>
+			<cfif structKeyExists(singleLog, "contentType")>
+				<tr>
+					<td>Content-Type</td>
+					<td>#singleLog.contentType#</td>
+				</tr>
+			</cfif>
+			<cfif structKeyExists(singleLog, "contentLength") and len(singleLog.contentLength) gt 0>
+				<tr>
+					<td>Content-Length</td>
+					<td>#singleLog.contentLength#</td>
+				</tr>
+			</cfif>
+
+			</table>
 		<cfelse>
 			Log not found?<br>
 		</cfif>

@@ -8,7 +8,10 @@
 </cfscript>
 <cfoutput>
 	<hr>
-	<p>This report is based on all the debugging logs currently in memory ( #this.perf.getRawLogCount()# logs, #this.perf.getDebugMemUsage()# )  click column headers to sort</p>
+	<p>This report is based on all the debugging logs currently in memory ( #this.perf.getRawLogCount()# logs, #this.perf.getDebugMemUsage()# )
+	<cfif this.perf.getRawLogCount() gt 0>  click column headers to sort </cfif>
+
+	</p>
 
 	<cfif hasJavaMethod(getPageContext().getConfig().getDebuggerPool(), "purge" )>
 		<input type="button" class="bm button submit" name="mainAction" value="Purge Logs"

@@ -16,7 +16,7 @@ td, th {
 	padding: 4 4 4 4;
 	vertical-align:top;
 }
-th {/* like .tblHead */
+th, .maintbl th {/* like .tblHead */
 	background-color:#39c; /* ABC */
 	color:#efede5;
 	font-weight:normal;
@@ -88,4 +88,16 @@ a {
 
 .header {
 	padding-bottom:12px;
+}
+
+.statusCode-4, .statusCode-5, .statusCode-6{
+	background-color: red;
+	color: white;
+}
+
+.statusCode-1, .statusCode-2 {
+	/*normal */
+}
+.statusCode-3 {
+	background-color: yellow;
 }
