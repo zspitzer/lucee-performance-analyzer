@@ -20,8 +20,8 @@ var perf = {
 		for (var str in pluginLanguage.STRINGS)
 			perf.langBundle[(String(str).toLowerCase())] = pluginLanguage.STRINGS[str];
 		perf.locale = pluginLanguage.locale;
-    },	
-    sortTable:		function (th, sortDefault){					
+    },
+    sortTable:		function (th, sortDefault){
 		var tr = th.parentElement;
 		var table = tr.parentElement.parentElement; // table;
 		var tbodys = table.getElementsByTagName("tbody");
@@ -74,11 +74,11 @@ var perf = {
 							if (!rowspans)
 								break;
 							if (data.length > 1)
-								data[data.length-1][1].push(row);										
+								data[data.length-1][1].push(row);
 							continue;
 						default:
 							break;
-					}								
+					}
 					var cell = row.children[th.cellIndex];
 					var val = cell.innerText;
 					if (!localeCompare){
@@ -87,7 +87,7 @@ var perf = {
 								val = val.toLowerCase();
 								break;
 							case "numeric":
-							case "number":								
+							case "number":
 								switch (val){
 									case "":
 									case "-":
@@ -111,16 +111,16 @@ var perf = {
 						}
 					}
 					var _row = row;
-					if (r === 0 && 
+					if (r === 0 &&
 							theads.length > 1 &&
-							tbody.previousElementSibling.nodeName === "THEAD" && 
+							tbody.previousElementSibling.nodeName === "THEAD" &&
 							tbody.previousElementSibling.children.length){
 						data.push([val, [tbody.previousElementSibling, row], tbody]);
 						sortGroup = true;
 					} else {
 						data.push([val, [row]]);
 					}
-					
+
 				}
 			}
 		}
@@ -136,26 +136,26 @@ var perf = {
 						if (a[0] > b[0])
 							return 1;
 						return 0;
-					}                    
+					}
 				});
 				break;
-			case "numeric": 
+			case "numeric":
 			case "number":
 				data = data.sort(function(a,b){
 					return a[0] - b[0];
-				}); 
+				});
 		}
-		
+
 		if (th.dataset.dir === "asc")
 			data.reverse();
 		if (!sortGroup){
 			for (r = 0; r < data.length; r++){
 				for (var rr = 0; rr < data[r][1].length; rr++)
 					tbody.appendChild(data[r][1][rr]);
-			}						
+			}
 		} else {
 			for (r = 0; r < data.length; r++){
-			
+
 				if (data[r].length === 3){
 					var _rows = data[r];
 					table.appendChild(_rows[1][0]); // thead
@@ -163,10 +163,10 @@ var perf = {
 					var _tbody = _rows[2];
 					for (var rr = 1; rr < _rows[1].length; rr++)
 						_tbody.appendChild(_rows[1][rr]); // tr
-					
+
 				} else {
 					for (var rr = 0; rr < data[r][1].length; rr++)
-						table.appendChild(data[r][1][rr]); 
+						table.appendChild(data[r][1][rr]);
 				}
 			}
 		}
@@ -182,5 +182,16 @@ $(function(){
 
 	$(".sort-table TH").on("click", function(ev){
 		perf.sortTable(ev.currentTarget, "numeric");
-	});	
+	});
+	$(".thread-filter a.filter").on("click", function(ev){
+		var filter=$(this).data("filter");
+		$(".thread-filter a.filter").each(function(){
+			$(this).removeClass("filterSelected");
+		})
+		$(this).addClass("filterSelected");
+
+		$(".thread-table TBODY TR.stack").each(function(){
+			$(this).toggle(($(this).data('stack') == filter || filter == 'all'));
+		});
+	});
 });
