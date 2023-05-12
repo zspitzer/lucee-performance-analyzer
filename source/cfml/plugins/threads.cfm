@@ -26,7 +26,7 @@
 	local.it = Thread.getAllStackTraces().keySet().iterator();
 	// loop threads
 
-	local.q_threads = queryNew( "name,threadState,stack,cpuTime","varchar,varchar,varchar,numeric" );
+	local.q_threads = queryNew( "name,threadState,stack,cpuTime,cfmlStack","varchar,varchar,varchar,numeric,object" );
 
 	loop collection=it item="local.t" {
 		//dump(t); abort;
@@ -47,10 +47,31 @@
 		QuerySetCell( q_threads, "threadState", t.getState().toString(), r );
 		QuerySetCell( q_threads, "stack",trim(str), r );
 		QuerySetCell( q_threads, "cpuTime", threadMXBean.getThreadCpuTime(t.getId())/1000/1000, r );
+		QuerySetCell( q_threads, "cfmlstack", extractCfmlStack(str), r );
+
 	}
 
 	q_threads = q_threads.sort("cputime","desc");
 	//dump(q_threads); 	abort;
+
+	function extractCfmlStack(string str){
+		var cfStack = REMatch("(\([\/a-zA-Z\_\-\.\$]*[\.cfc|\.cfm|\.lucee)]\:\d+\))", arguments.str);
+		for (var cf = 1; cf <= cfStack.len(); cf++){
+			// strip out the wrapping braces
+			cfStack[cf] = ListFirst(cfStack[cf],"()");
+		}
+		// https://regex101.com/r/Fd8qCi/1/
+		var logStack = REMatch("(\[[\:\/\\a-zA-Z\_\-\.\$]*\])", arguments.str);
+		if (logStack.len() gt 0){
+			// de dup
+			var ls = StructNew('linked');
+			for (var s in logstack)
+				ls[listFirst(s,"[]")]="";
+			logStack = StructKeyList(ls);
+			ArrayAppend(cfStack, logStack, true);
+		}
+		return cFstack;
+	}
 </cfscript>
 
 <cfquery name="local.q_summary" dbtype="query">
@@ -66,8 +87,15 @@
 </cfoutput>
 <br>
 <br>
+<b>Filter:</b>
+<span class="thread-filter">
+	<cfloop list="all,cfml,java" item="filter">
+		<cfoutput><a class="filter #(filter eq "all" ? "filterSelected" : "")#" data-filter="#filter#">#filter#</a></cfoutput>
+	</cfloop>
+</span>
+<br>
 
-<table class="maintbl checkboxtbl sort-table">
+<table class="maintbl checkboxtbl sort-table thread-table" >
 	<thead>
 	<tr>
 		<th data-type="text">Thread</th>
@@ -77,12 +105,17 @@
 	</tr>
 	</thead>
 <tbody>
-
 	<cfoutput query="q_threads">
-		<tr class="#altRow(local.q_threads.currentRow)#">
+		<tr class="#altRow(local.q_threads.currentRow)# stack" data-stack="#isEmpty(q_threads.cfmlStack)? "java" : "cfml"#">
 			<td>#q_threads.name#</td>
 			<td>#q_threads.threadState#</td>
-			<td><pre>#q_threads.stack#</pre></td>
+			<td>
+				<cfif ArrayLen(q_threads.cfmlStack)>
+					<div class="cfmlStack">
+						<cfdump var=#q_threads.cfmlStack#>
+					</div>
+				</cfif>
+				<pre class="javaStack">#q_threads.stack#</pre></td>
 			<td>#DecimalFormat(q_threads.cpuTime)#</td>
 		</tr>
 	</cfoutput>

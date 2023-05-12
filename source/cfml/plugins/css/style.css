@@ -101,3 +101,11 @@ a {
 .statusCode-3 {
 	background-color: yellow;
 }
+
+.filter {
+	padding-right: 10px;;
+}
+
+.filterSelected {
+	font-weight: bolder;
+}
