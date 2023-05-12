@@ -351,8 +351,10 @@ component {
 					QuerySetCell( local.q, "_type", exp.type, r );
 					QuerySetCell( local.q, "message", exp.message, r );
 					QuerySetCell( local.q, "detail", exp.detail, r );
-					QuerySetCell( local.q, "line", exp.TagContext[1].line, r );
-					QuerySetCell( local.q, "template", exp.TagContext[1].template, r );
+					if ( arrayLen(exp.TagContext) ) {
+						QuerySetCell( local.q, "line", exp.TagContext[1].line, r );
+						QuerySetCell( local.q, "template", exp.TagContext[1].template, r );
+					}
 					QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 				}
 			}
@@ -490,7 +492,7 @@ component {
 	}
 
 	public struct function getDebugLogs( required array logs ){
-		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread,statusCode,ContentType,ContentLength" );
+		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread,threadName,statusCode,ContentType,ContentLength" );
 		local.totals = {
 			app = 0,
 			query: 0,
@@ -552,6 +554,7 @@ component {
 			QuerySetCell( local.q, "exceptions", _exp, local.r );
 			QuerySetCell( local.q, "requestUrl", local.log.scope.cgi.REQUEST_URL, local.r );
 			QuerySetCell( local.q, "isThread", ( Len( local.log.scope.cgi.HTTP_USER_AGENT ) eq 0 ), local.r );
+			QuerySetCell( local.q, "threadName", local.log.threadName ?: "", local.r );
 
 			if ( StructKeyExists( log, "statusCode" ) )
 				QuerySetCell( local.q, "statusCode", log.statusCode, local.r );

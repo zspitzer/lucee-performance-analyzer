@@ -27,7 +27,7 @@
 	if ( variables.exactTemplatePath && DirectoryExists( arguments.req.template ))
 		variables.exactTemplatePath = false;
 
-	void function renderRequestLink ( required struct req, linkTemplate, logId ){
+	void function renderRequestLink ( required struct req, required string linkTemplate, required string logId, string extra="" ){
 		var temp = arguments.linkTemplate;
 		if (len( arguments.req.url ) gt 0 and find( arguments.req.url, arguments.linkTemplate, 1 ) eq 1)
 			temp = mid( arguments.linkTemplate, len( arguments.req.url ) + 1 );
@@ -35,7 +35,10 @@
 			temp = arguments.linkTemplate;
 		echo('<a href="?action=#arguments.req.action#&plugin=#arguments.req.plugin#&pluginAction=Analysis'
 			& '&log=#urlEncodedFormat(arguments.logId)#"'
-			& 'title="show only problems from this request" class="toolbar-filter">#htmleditformat( temp )#</a>');
+			& 'title="show only problems from this request" class="toolbar-filter">#htmleditformat( temp )#');
+		if ( Len( arguments.extra ) )
+			echo( ' ' & arguments.extra );
+		echo(' </a> ');
 
 	}
 
@@ -139,6 +142,18 @@
 				<tr>
 					<td>Content-Length</td>
 					<td>#singleLog.contentLength#</td>
+				</tr>
+			</cfif>
+			<cfif structKeyExists(singleLog, "applicationName") and len(singleLog.applicationName) gt 0>
+				<tr>
+					<td>Application Name</td>
+					<td>#singleLog.applicationName#</td>
+				</tr>
+			</cfif>
+			<cfif structKeyExists(singleLog, "threadName") and len(singleLog.threadName) gt 0>
+				<tr>
+					<td>Thread</td>
+					<td>#singleLog.threadName#</td>
 				</tr>
 			</cfif>
 

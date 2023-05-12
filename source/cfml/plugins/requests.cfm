@@ -26,8 +26,14 @@
 					console.log( "#JsStringFormat(q.requestUrl)#", #SerializeJson( this.Perf.getLog( q.id ) )# );
 				</script>
 			</cfif>
+			<cfscript>
+				if (local.q.isThread )
+						local.requestExtra = ' <span title="Thread">' & (len(local.q.threadName) ? local.q.threadName: "thread") & '</span>';
+					else
+						local.requestExtra = "";
+			</cfscript>
 			<tr class="#altRow( local.q.currentRow )#">
-				<td>#renderRequestLink( arguments.req, local.q.path, local.q.id )# <cfif local.q.isThread>(thread)</cfif></td>
+				<td>#renderRequestLink( arguments.req, local.q.path, local.q.id, local.requestExtra )#</td>
 				<td class="statusCode-#Left(local.q.statusCode,1)#">#listFirst(local.q.statusCode," ")#</td>
 				<td>
 				<a href="#local.baseUrl#&url=#urlEncodedFormat(q.requestUrl)#" title="Filter by Request URL">By Url</a>,&nbsp;
