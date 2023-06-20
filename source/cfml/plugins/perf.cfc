@@ -119,12 +119,19 @@ component {
 			} else {
 				local.logs = this.debugLogs;
 			}
-
+			request.hiddenPerfAnalyzerOwnLogs = 0;
 			// hide performance analyzer
 			if ( application.applicationName eq "lucee-performance-analzyer" ){
 				var perfUrl = ListFirst( cgi.REQUEST_URL, "?" );
 				local.logs = local.logs.filter( function( row ){
-					return arguments.row.scope.cgi.REQUEST_URL does not contain variables.perfUrl;
+					var notPerfAnalyzer = arguments.row.scope.cgi.REQUEST_URL does not contain variables.perfUrl;
+					if (notPerfAnalyzer){
+						return true;
+					} else {
+						request.hiddenPerfAnalyzerOwnLogs++;
+						return false;
+					}
+
 				});
 			}
 

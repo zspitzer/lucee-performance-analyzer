@@ -78,19 +78,27 @@
 	select threadState, count(threadState) as threads, sum(cpuTime) as cpuTotal
 	from  q_threads
 	group by threadState
+		union
+	select 'All threads' as threadstate, count(*) as threads, sum(cpuTime) as cpuTotal
+	from  q_threads
 	order by cpuTotal desc
 </cfquery>
 
-<b>Summary:</b>
-<cfoutput query="q_summary">
-	#q_summary.threadState# (#q_summary.threads#) #NumberFormat(q_summary.cpuTotal)#s,
-</cfoutput>
+<b>Thread States:</b>
+<span class="thread-state-filter">
+	<cfoutput query="q_summary">
+		<a class="filter #(q_summary.threadState eq "all threads" ? "filterSelected" : "")#"
+			data-filter="#q_summary.threadState#" title="click to filter">#q_summary.threadState#</a>
+		( #q_summary.threads# ) #NumberFormat(q_summary.cpuTotal)#s,
+	</cfoutput>
+</span>
 <br>
 <br>
-<b>Filter:</b>
-<span class="thread-filter">
+<b>Thread Types:</b>
+<span class="thread-type-filter">
 	<cfloop list="all,cfml,java" item="filter">
-		<cfoutput><a class="filter #(filter eq "all" ? "filterSelected" : "")#" data-filter="#filter#">#filter#</a></cfoutput>
+		<cfoutput><a class="filter #(filter eq "all" ? "filterSelected" : "")#"
+			data-filter="#filter#" title="click to filter">#filter#</a></cfoutput>
 	</cfloop>
 </span>
 <br>
@@ -106,7 +114,7 @@
 	</thead>
 <tbody>
 	<cfoutput query="q_threads">
-		<tr class="#altRow(local.q_threads.currentRow)# stack" data-stack="#isEmpty(q_threads.cfmlStack)? "java" : "cfml"#">
+		<tr class="#altRow(local.q_threads.currentRow)# stack" data-stack="#isEmpty(q_threads.cfmlStack)? "java" : "cfml"#" data-state="#q_threads.threadState#">
 			<td>#q_threads.name#</td>
 			<td>#q_threads.threadState#</td>
 			<td>

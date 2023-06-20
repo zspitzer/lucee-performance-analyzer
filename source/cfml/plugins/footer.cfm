@@ -9,7 +9,10 @@
 <cfoutput>
 	<hr>
 	<p>This report is based on all the debugging logs currently in memory ( #this.perf.getRawLogCount()# logs, #this.perf.getDebugMemUsage()# )
-	<cfif this.perf.getRawLogCount() gt 0>  click column headers to sort </cfif>
+		<cfif request.hiddenPerfAnalyzerOwnLogs?: false>(note #request.hiddenPerfAnalyzerOwnLogs# logs from Performance Analzyer hidden)</cfif>
+	<p>
+		<cfif this.perf.getRawLogCount() gt 0>  click column headers to sort </cfif>
+	</p>
 
 	</p>
 

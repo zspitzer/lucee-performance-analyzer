@@ -227,7 +227,7 @@
 					</cfif>
 				<cfscript>
 					local.offset += len( local.folder ) +1;
-					delim = mid( arguments.req.template, local.offset, 1 );
+					delim = server.separator.file;
 				</cfscript>
 			</cfloop>
 			&nbsp; <a href="#local.baseUrl#" class="toolbar-filter" title="Remove Template Path Filter">(clear)</a>

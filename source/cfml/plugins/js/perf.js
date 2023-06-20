@@ -183,15 +183,27 @@ $(function(){
 	$(".sort-table TH").on("click", function(ev){
 		perf.sortTable(ev.currentTarget, "numeric");
 	});
-	$(".thread-filter a.filter").on("click", function(ev){
+	$(".thread-type-filter a.filter").on("click", function(){
 		var filter=$(this).data("filter");
-		$(".thread-filter a.filter").each(function(){
+		$(".thread-type-filter a.filter").each(function(){
 			$(this).removeClass("filterSelected");
 		})
 		$(this).addClass("filterSelected");
 
 		$(".thread-table TBODY TR.stack").each(function(){
 			$(this).toggle(($(this).data('stack') == filter || filter == 'all'));
+		});
+	});
+
+	$(".thread-state-filter a.filter").on("click", function(){
+		var filter=$(this).data("filter");
+		$(".thread-state-filter a.filter").each(function(){
+			$(this).removeClass("filterSelected");
+		})
+		$(this).addClass("filterSelected");
+
+		$(".thread-table TBODY TR.stack").each(function(){
+			$(this).toggle(($(this).data('state') == filter || filter == 'all'));
 		});
 	});
 });
