@@ -518,7 +518,7 @@ component {
 			local.cgi  = local.log.scope.cgi;
 			var path = local.cgi.REQUEST_URL
 
-			if (local.cgi.REQUEST_METHOD eq "POST")
+			if ( ( local.cgi.REQUEST_METHOD ?: "" ) eq "POST" )
 				path = "POST #PATH#";
 
 			var _scope = "0";
