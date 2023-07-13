@@ -4,11 +4,12 @@ component {
 	this.filtered = false;
 	variables.cfquery ="";
 
-	public void function init (){
-		admin action="getLoggedDebugData"
-			type="#request.adminType#"
-			password="#session["password"&request.adminType]#"
-			returnVariable="this.debugLogs";
+	public void function init ( required string adminType, required string password ){
+		variables.adminType = arguments.adminType;
+		variables.password = arguments.password;
+
+		this.debugLogs = getRawDebugLogs();
+
 		timer label="prepare Logs" {
 			loop from="#this.debugLogs.len()#" to="1" step=-1 index="local.i" {
 				if ( !StructKeyExists( this.debugLogs[i], "scope" ) )
@@ -22,11 +23,19 @@ component {
 			this.debugLogs = [];
 	}
 
+	public array function getRawDebugLogs(){
+		admin action="getLoggedDebugData"
+			type="#variables.adminType#"
+			password="#variables.password#"
+			returnVariable="local.debugLogs";
+		return debugLogs;
+	}
+
 	public void function purgeLogs(){
 		try {
 			admin action="purgeDebugPool"
-				type="#request.adminType#"
-				password="#session["password"&request.adminType]#";
+				type="#variables.adminType#"
+				password="#variables.password#";
 			this.debugLogs = [];
 		} catch ( e ){
 			```
@@ -174,7 +183,7 @@ component {
 					local.result = getQueries( arguments.logs );
 					break;
 				case "logs":
-					local.result = getDebugLogs( arguments.logs );
+					local.result = Raw( arguments.logs );
 					break;
 				case "dumps":
 					local.result = getDumps( arguments.logs );
@@ -498,7 +507,7 @@ component {
 		};
 	}
 
-	public struct function getDebugLogs( required array logs ){
+	public struct function Raw( required array logs ){
 		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread,threadName,statusCode,ContentType,ContentLength" );
 		local.totals = {
 			app = 0,

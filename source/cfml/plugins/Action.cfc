@@ -41,7 +41,7 @@ component extends="lucee.admin.plugin.Plugin" {
 		request.title = "Perf Analyzer";
 		if ( not url.xhr)
 			variables.renderUtils.includeCSS( "style" );
-		this.perf = new Perf();
+		this.perf = new Perf(adminType=request.adminType, password=session["password"&request.adminType]);
 		cfinclude( template="toolbar.cfm" );
 
 		cfinclude( template=arguments.template );

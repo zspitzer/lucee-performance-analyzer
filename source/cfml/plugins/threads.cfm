@@ -1,17 +1,10 @@
 <!--- needed for toolbar.cfm --->
 <cfscript>
 	local.debugLogs = {};
-	local.debugLogs.data = []
-	admin action="getLoggedDebugData"
-		type="#request.adminType#"
-		password="#session["password"&request.adminType]#"
-		returnVariable="local.debugLogs.data";
+	local.debugLogs.data = this.perf.getRawDebugLogs();
+
 	setTitle( "Java Threads" );
 </cfscript>
-<cfadmin action="getLoggedDebugData"
-	type="#request.adminType#"
-	password="#session["password"&request.adminType]#"
-	returnVariable="local.debugLogs.data">
 <br>
 <cfscript>
 	local.javaManagementFactory = createObject( "java", "java.lang.management.ManagementFactory" );
