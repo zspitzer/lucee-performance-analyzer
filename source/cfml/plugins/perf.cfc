@@ -183,7 +183,7 @@ component {
 					local.result = getQueries( arguments.logs );
 					break;
 				case "logs":
-					local.result = Raw( arguments.logs );
+					local.result = getDebugLogs( arguments.logs );
 					break;
 				case "dumps":
 					local.result = getDumps( arguments.logs );
@@ -507,7 +507,7 @@ component {
 		};
 	}
 
-	public struct function Raw( required array logs ){
+	public struct function getDebugLogs( required array logs ){
 		var q = QueryNew( "template,requestUrl,path,total,query,load,app,scope,exceptions,starttime,id,size,isThread,threadName,statusCode,ContentType,ContentLength" );
 		local.totals = {
 			app = 0,
