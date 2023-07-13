@@ -389,7 +389,7 @@ component {
 	}
 
 	public struct function getDumps( required array logs ){
-		var q = QueryNew( "output,template,line,requestUrl" );
+		var q = QueryNew( "output,template,line,requestUrl", "clob,varchar,integer,varchar" );
 
 		loop from="#arguments.logs.len()#" to="1" step=-1 index="local.i" {
 			local.log = arguments.logs[local.i];
@@ -404,10 +404,10 @@ component {
 		}
 		```
 		<cfquery name="local.q_dumps" dbtype="query">
-			select  output, template, line, requestUrl, count(*) as executions
+			select  output, template, line, requestUrl, count(*) as dumps
 			from    q
 			group by output, template, line, requestUrl
-			order by executions desc
+			order by dumps desc
 		</cfquery>
 		```
 		return {
